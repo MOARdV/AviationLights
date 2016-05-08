@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Reflection;
+
 namespace AviationLights
 
 	//Originally made by RPGprayer, edited by BigNose, Why485, GROOV3ST3R, JDP and J.Random
+	// Fixes for KSP 1.1 applied by MOARdV.
 	//License: This file contains code from RPGprayers "Position/Navigation Lights". Used with permission.
 {
 	public static class navLightStates
@@ -26,12 +28,14 @@ namespace AviationLights
 	{
 		protected Color _navLightColor;
 
-		[KSPField (isPersistant = true)]
+		[KSPField(isPersistant = true)]
 		public int navLightSwitch = 0;
 
 		private double _lastTimeFired;
 		private GameObject LightOffsetParent;
-		
+		private Light mainLight;
+		private Light glowLight;
+
 		private const float INTENSITY_GLOW = 0.33f;
 		private const float INTENSITY_OFFSET = 0.67f;
 		bool b = false, flightStarted = false;
@@ -69,13 +73,15 @@ namespace AviationLights
 
 			// Main Illumination light
 			LightOffsetParent.gameObject.AddComponent<Light>();
-			LightOffsetParent.gameObject.light.color = _navLightColor;
-			LightOffsetParent.gameObject.light.intensity = 0;
+			LightOffsetParent.gameObject.GetComponentCached<Light>(ref mainLight);
+			mainLight.color = _navLightColor;
+			mainLight.intensity = 0;
 
 			// Glow Illumination light
 			base.gameObject.AddComponent<Light>();
-			base.gameObject.light.color = _navLightColor;
-			base.gameObject.light.intensity = 0;
+			base.gameObject.GetComponentCached<Light>(ref glowLight);
+			glowLight.color = _navLightColor;
+			glowLight.intensity = 0;
 
 			LightOffsetParent.gameObject.AddComponent<MeshRenderer>();
 		}
@@ -87,8 +93,8 @@ namespace AviationLights
 			{
 				case (int)navLightStates.navLightState.Off:
 				//Lights go to 'Off' mode
-				LightOffsetParent.gameObject.light.intensity = 0;
-				base.gameObject.light.intensity = 0;
+				mainLight.intensity = 0;
+				glowLight.intensity = 0;
 				break;
 				case (int)navLightStates.navLightState.Flash:
 				//Lights go to 'Flash' mode
@@ -104,23 +110,23 @@ namespace AviationLights
 				break;
 				case (int)navLightStates.navLightState.On:
 				//Lights go to 'On' mode
-				LightOffsetParent.gameObject.light.intensity = INTENSITY_OFFSET;
-				base.gameObject.light.intensity = INTENSITY_GLOW;
+				mainLight.intensity = INTENSITY_OFFSET;
+				glowLight.intensity = INTENSITY_GLOW;
 				break;
 			}
 
 			//Energy requirements check: if the light is not off and requires resources; request resource. If returned resource is less than requested; turn off
-			if (navLightSwitch > 0 && EnergyReq > 0 && TimeWarp.deltaTime > 0 && part.RequestResource (Resource, EnergyReq * TimeWarp.deltaTime) == 0)
+			if (navLightSwitch > 0 && EnergyReq > 0 && TimeWarp.deltaTime > 0 && part.RequestResource(Resource, EnergyReq * TimeWarp.deltaTime) == 0)
 				navLightSwitch = (int)navLightStates.navLightState.Off;
 		}
-		
+
 		public override string GetInfo()
 		{
 			if (EnergyReq > 0)
 				return Resource + " : " + (EnergyReq * 60).ToString("0.0") + "/min.";
 			else return "";
 		}
-		
+
 		private void FlashBasedSwitcher(float FlashOn)
 		{
 			if (_lastTimeFired < Planetarium.GetUniversalTime() - FlashOn)
@@ -128,23 +134,23 @@ namespace AviationLights
 				b = !b;
 				IntervalFlashMode = b ? this.FlashOn : FlashOff;
 				_lastTimeFired = Planetarium.GetUniversalTime();
-				LightOffsetParent.gameObject.light.intensity = (LightOffsetParent.gameObject.light.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-				base.gameObject.light.intensity = (base.gameObject.light.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+				mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
+				glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
 			}
 		}
 
 		private void DoubleFlashBasedSwitcher(float FlashOn)
 		{
-			LightOffsetParent.gameObject.light.intensity = 0;
-			base.gameObject.light.intensity = 0;
+			mainLight.intensity = 0;
+			glowLight.intensity = 0;
 
 			if (_lastTimeFired < Planetarium.GetUniversalTime() - FlashOn)
 			{
 				b = !b;
 				IntervalFlashMode = b ? this.FlashOn : FlashOff;
 				_lastTimeFired = Planetarium.GetUniversalTime();
-				LightOffsetParent.gameObject.light.intensity = (LightOffsetParent.gameObject.light.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-				base.gameObject.light.intensity = (base.gameObject.light.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+				mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
+				glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
 			}
 		}
 
@@ -153,11 +159,11 @@ namespace AviationLights
 			if (_lastTimeFired < Planetarium.GetUniversalTime() - Interval)
 			{
 				_lastTimeFired = Planetarium.GetUniversalTime();
-				LightOffsetParent.gameObject.light.intensity = (LightOffsetParent.gameObject.light.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-				base.gameObject.light.intensity = (base.gameObject.light.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+				mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
+				glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
 			}
 		}
-		
+
 		[KSPAction("LightToggle", KSPActionGroup.None, guiName = "Light toggle")]
 		public void LightToggle(KSPActionParam param)
 		{
@@ -214,7 +220,7 @@ namespace AviationLights
 			else
 				navLightSwitch = 2;
 		}
-		
+
 		[KSPEvent(name = "IntervalEvent", active = true, guiActive = true, guiName = "Interval")]
 		public void IntervalEvent()
 		{
@@ -235,6 +241,6 @@ namespace AviationLights
 				navLightSwitch = 0;
 			else
 				navLightSwitch = 4;
-		}		
+		}
 	}
 }
