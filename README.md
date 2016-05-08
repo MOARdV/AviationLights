@@ -1,7 +1,9 @@
 # AviationLights
 Aviation Lights for Kerbal Space Program
 
-This is a maintainance respository for AviationLights for KSP by BigNose.  During BigNose's absence from the forum, I will maintain the mod here.
+This is a maintainance respository for AviationLights for KSP by BigNose.  During BigNose's absence from the forum, I will maintain the mod on GitHub.
+
+Source code for the MOARdV maintainance releases is available on [GitHub](https://github.com/MOARdV/AviationLights).
 
 ## CREDITS
 
