@@ -1,10 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using System.Reflection;
 
 //Originally made by RPGprayer, edited by BigNose, Why485, GROOV3ST3R, JDP and J.Random
 // Fixes for KSP 1.1 applied by MOARdV.
