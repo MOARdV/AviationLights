@@ -33,6 +33,10 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 ## CHANGELOG
 
+18SEP16 - v3.10 (KSP 1.2.x maintainance release - MOARdV)
+
+* Fixed: Works with KSP 1.2.0
+
 8MAY16 - v3.9 (KSP 1.1.x maintainance release - MOARdV)
 
 * Fixed: Works with KSP 1.1.x.
@@ -40,7 +44,7 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 16NOV15 - v3.8 (Entry cost and physics - BigNose)
 
-* Added: Lights now have double their normal prize as entry cost in the tech tree
+* Added: Lights now have double their normal price as entry cost in the tech tree
 * Changed: Lights are now skipped by the physics engine (performance gain when using them in large numbers)
 
 ## LICENSE
