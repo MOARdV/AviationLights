@@ -33,7 +33,7 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 ## CHANGELOG
 
-18SEP16 - v3.10 (KSP 1.2.x maintainance release - MOARdV)
+11OCT16 - v3.10 (KSP 1.2.x maintainance release - MOARdV)
 
 * Fixed: Works with KSP 1.2.0
 
