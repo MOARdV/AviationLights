@@ -33,6 +33,12 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 ## CHANGELOG
 
+12OCT16 - v3.11 (Real KSP 1.2 fix - MOARdV)
+
+* Fixed some oversights in KSP 1.2.0 compatibility (Issue #1).
+* Converted PNG to DDS and rescaled them to 128 x 128.
+* Fixed minor bug where flash interval was reversed if the light was already on.
+
 11OCT16 - v3.10 (KSP 1.2.x maintainance release - MOARdV)
 
 * Fixed: Works with KSP 1.2.0
