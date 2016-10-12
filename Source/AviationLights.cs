@@ -36,6 +36,7 @@ namespace AviationLights
 
         [KSPField]
         public string Resource = "ElectricCharge";
+        private int resourceId;
 
         [KSPField]
         public float EnergyReq = 0;
@@ -53,6 +54,16 @@ namespace AviationLights
         public override void OnStart(PartModule.StartState state)
         {
             if (state == StartState.Editor) return;
+
+            try
+            {
+                resourceId = PartResourceLibrary.Instance.resourceDefinitions[Resource].id;
+            }
+            catch
+            {
+                resourceId = PartResourceLibrary.ElectricityHashcode;
+            }
+
             flightStarted = true;
 
             _navLightColor = new Color(Color.x, Color.y, Color.z);
@@ -66,23 +77,20 @@ namespace AviationLights
             LightOffsetParent.transform.Translate(0.33f, 0.0f, 0.0f);
 
             // Main Illumination light
-            LightOffsetParent.gameObject.AddComponent<Light>();
-            LightOffsetParent.gameObject.GetComponentCached<Light>(ref mainLight);
+            mainLight = LightOffsetParent.gameObject.AddComponent<Light>();
             mainLight.color = _navLightColor;
-            mainLight.intensity = 0;
+            mainLight.intensity = 0.0f;
 
             // Glow Illumination light
-            base.gameObject.AddComponent<Light>();
-            base.gameObject.GetComponentCached<Light>(ref glowLight);
+            glowLight = base.gameObject.AddComponent<Light>();
             glowLight.color = _navLightColor;
-            glowLight.intensity = 0;
-
-            LightOffsetParent.gameObject.AddComponent<MeshRenderer>();
+            glowLight.intensity = 0.0f;
         }
 
         public override void OnUpdate()
         {
             if (!flightStarted) return;
+
             switch (navLightSwitch)
             {
                 case (int)navLightStates.navLightState.Off:
@@ -110,15 +118,25 @@ namespace AviationLights
             }
 
             //Energy requirements check: if the light is not off and requires resources; request resource. If returned resource is less than requested; turn off
-            if (navLightSwitch > 0 && EnergyReq > 0 && TimeWarp.deltaTime > 0 && part.RequestResource(Resource, EnergyReq * TimeWarp.deltaTime) == 0)
-                navLightSwitch = (int)navLightStates.navLightState.Off;
+            if (navLightSwitch > 0 && EnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
+            {
+                if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5)
+                {
+                    navLightSwitch = (int)navLightStates.navLightState.Off;
+                }
+            }
         }
 
         public override string GetInfo()
         {
-            if (EnergyReq > 0)
-                return Resource + " : " + (EnergyReq * 60).ToString("0.0") + "/min.";
-            else return "";
+            if (EnergyReq > 0.0f)
+            {
+                return Resource + " : " + (EnergyReq * 60.0f).ToString("0.0") + "/min.";
+            }
+            else
+            {
+                return "";
+            }
         }
 
         private void FlashBasedSwitcher(float FlashOn)
@@ -135,8 +153,8 @@ namespace AviationLights
 
         private void DoubleFlashBasedSwitcher(float FlashOn)
         {
-            mainLight.intensity = 0;
-            glowLight.intensity = 0;
+            mainLight.intensity = 0f;
+            glowLight.intensity = 0f;
 
             if (_lastTimeFired < Planetarium.GetUniversalTime() - FlashOn)
             {
@@ -158,34 +176,35 @@ namespace AviationLights
             }
         }
 
-        [KSPAction("LightToggle", KSPActionGroup.None, guiName = "Light toggle")]
+        [KSPAction("Light Toggle", KSPActionGroup.None)]
         public void LightToggle(KSPActionParam param)
         {
-            OnEvent();
+            LightOnEvent();
         }
 
-        [KSPAction("FlashToggle", KSPActionGroup.None, guiName = "Flash toggle")]
+        [KSPAction("Flash Toggle", KSPActionGroup.None)]
         public void FlashToggle(KSPActionParam param)
         {
-            FlashEvent();
+            LightFlashEvent();
         }
 
-        [KSPAction("DoubleFlashToggle", KSPActionGroup.None, guiName = "Double Flash toggle")]
+        [KSPAction("Double Flash Toggle", KSPActionGroup.None)]
         public void DoubleFlashToggle(KSPActionParam param)
         {
-            DoubleFlashEvent();
+            LightDoubleFlashEvent();
         }
 
-        [KSPAction("IntervalToggle", KSPActionGroup.None, guiName = "Interval toggle")]
+        [KSPAction("Interval Toggle", KSPActionGroup.None)]
         public void IntervalToggle(KSPActionParam param)
         {
-            IntervalEvent();
+            LightIntervalEvent();
         }
 
-        [KSPAction("Cycle", KSPActionGroup.None, guiName = "Cycle modes")]
+        [KSPAction("Cycle Modes", KSPActionGroup.None)]
         public void Cycle(KSPActionParam param)
         {
             _lastTimeFired = 0;
+            b = false;
 
             if (navLightSwitch == 4)
                 navLightSwitch = 0;
@@ -193,10 +212,13 @@ namespace AviationLights
                 navLightSwitch++;
         }
 
-        [KSPEvent(name = "FlashEvent", active = true, guiActive = true, guiName = "Flash")]
-        public void FlashEvent()
+        [KSPEvent(guiActive = true, guiName = "Flash")]
+        public void LightFlashEvent()
         {
             _lastTimeFired = 0;
+            b = false;
+            mainLight.intensity = 0f;
+            glowLight.intensity = 0f;
 
             if (navLightSwitch == 1)
                 navLightSwitch = 0;
@@ -204,10 +226,13 @@ namespace AviationLights
                 navLightSwitch = 1;
         }
 
-        [KSPEvent(name = "DoubleFlashEvent", active = true, guiActive = true, guiName = "Double Flash")]
-        public void DoubleFlashEvent()
+        [KSPEvent(guiActive = true, guiName = "Double Flash")]
+        public void LightDoubleFlashEvent()
         {
             _lastTimeFired = 0;
+            b = false;
+            mainLight.intensity = 0f;
+            glowLight.intensity = 0f;
 
             if (navLightSwitch == 2)
                 navLightSwitch = 0;
@@ -215,10 +240,13 @@ namespace AviationLights
                 navLightSwitch = 2;
         }
 
-        [KSPEvent(name = "IntervalEvent", active = true, guiActive = true, guiName = "Interval")]
-        public void IntervalEvent()
+        [KSPEvent(guiActive = true, guiName = "Interval")]
+        public void LightIntervalEvent()
         {
             _lastTimeFired = 0;
+            b = false;
+            mainLight.intensity = 0f;
+            glowLight.intensity = 0f;
 
             if (navLightSwitch == 3)
                 navLightSwitch = 0;
@@ -226,10 +254,11 @@ namespace AviationLights
                 navLightSwitch = 3;
         }
 
-        [KSPEvent(name = "OnEvent", active = true, guiActive = true, guiName = "Light")]
-        public void OnEvent()
+        [KSPEvent(guiActive = true, guiName = "Light")]
+        public void LightOnEvent()
         {
             _lastTimeFired = 0;
+            b = false;
 
             if (navLightSwitch == 4)
                 navLightSwitch = 0;
