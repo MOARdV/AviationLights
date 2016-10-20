@@ -212,7 +212,7 @@ namespace AviationLights
                 navLightSwitch++;
         }
 
-        [KSPEvent(guiActive = true, guiName = "Flash")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Flash")]
         public void LightFlashEvent()
         {
             _lastTimeFired = 0;
@@ -226,7 +226,7 @@ namespace AviationLights
                 navLightSwitch = 1;
         }
 
-        [KSPEvent(guiActive = true, guiName = "Double Flash")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Double Flash")]
         public void LightDoubleFlashEvent()
         {
             _lastTimeFired = 0;
@@ -240,7 +240,7 @@ namespace AviationLights
                 navLightSwitch = 2;
         }
 
-        [KSPEvent(guiActive = true, guiName = "Interval")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Interval")]
         public void LightIntervalEvent()
         {
             _lastTimeFired = 0;
@@ -254,7 +254,7 @@ namespace AviationLights
                 navLightSwitch = 3;
         }
 
-        [KSPEvent(guiActive = true, guiName = "Light")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Light")]
         public void LightOnEvent()
         {
             _lastTimeFired = 0;
