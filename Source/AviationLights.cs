@@ -265,5 +265,47 @@ namespace AviationLights
             else
                 navLightSwitch = 4;
         }
+
+		public void LightOff ()
+		{
+			switch (navLightSwitch) {
+			case 1:
+				LightFlashEvent ();
+				break;
+			case 2:
+				LightDoubleFlashEvent ();
+				break;
+			case 3:
+				LightIntervalEvent ();
+				break;
+			case 4:
+				LightOnEvent ();
+				break;
+			}
+		}
+
+		public void LightFlash ()
+		{
+			navLightSwitch = 0;
+			LightFlashEvent ();
+		}
+
+		public void LightDoubleFlash ()
+		{
+			navLightSwitch = 0;
+			LightDoubleFlashEvent ();
+		}
+
+		public void LightInterval ()
+		{
+			navLightSwitch = 0;
+			LightIntervalEvent ();
+		}
+
+		public void LightOn ()
+		{
+			navLightSwitch = 0;
+			LightOnEvent ();
+		}
     }
 }
