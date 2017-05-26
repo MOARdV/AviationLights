@@ -33,6 +33,10 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 ## CHANGELOG
 
+26MAY17 - v3.14 (MOARdV)
+
+* Fix VAB/SPH NRE introduced in v3.11.
+
 25MAY17 - v3.13 (MOARdV)
 
 * Recompiled for KSP 1.3.0.
