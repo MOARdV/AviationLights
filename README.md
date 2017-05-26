@@ -33,6 +33,10 @@ Due to popular request, I now also included the amber warning light by Deadwease
 
 ## CHANGELOG
 
+25MAY17 - v3.13 (MOARdV)
+
+* Recompiled for KSP 1.3.0.
+
 19OCT16 - v3.12 (MOARdV)
 
 * Re-enabled configuring light modes in the VAB/SPH (inadvertently removed them in 3.11).
