@@ -203,7 +203,7 @@ namespace AviationLights
         [KSPAction("Cycle Modes", KSPActionGroup.None)]
         public void Cycle(KSPActionParam param)
         {
-            _lastTimeFired = 0;
+            _lastTimeFired = 0.0;
             b = false;
 
             if (navLightSwitch == 4)
@@ -215,10 +215,13 @@ namespace AviationLights
         [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Flash")]
         public void LightFlashEvent()
         {
-            _lastTimeFired = 0;
+            _lastTimeFired = 0.0;
             b = false;
-            mainLight.intensity = 0f;
-            glowLight.intensity = 0f;
+            if (mainLight != null)
+            {
+                mainLight.intensity = 0f;
+                glowLight.intensity = 0f;
+            }
 
             if (navLightSwitch == 1)
                 navLightSwitch = 0;
@@ -229,10 +232,13 @@ namespace AviationLights
         [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Double Flash")]
         public void LightDoubleFlashEvent()
         {
-            _lastTimeFired = 0;
+            _lastTimeFired = 0.0;
             b = false;
-            mainLight.intensity = 0f;
-            glowLight.intensity = 0f;
+            if (mainLight != null)
+            {
+                mainLight.intensity = 0f;
+                glowLight.intensity = 0f;
+            }
 
             if (navLightSwitch == 2)
                 navLightSwitch = 0;
@@ -243,10 +249,13 @@ namespace AviationLights
         [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Interval")]
         public void LightIntervalEvent()
         {
-            _lastTimeFired = 0;
+            _lastTimeFired = 0.0;
             b = false;
-            mainLight.intensity = 0f;
-            glowLight.intensity = 0f;
+            if (mainLight != null)
+            {
+                mainLight.intensity = 0f;
+                glowLight.intensity = 0f;
+            }
 
             if (navLightSwitch == 3)
                 navLightSwitch = 0;
@@ -257,7 +266,7 @@ namespace AviationLights
         [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Light")]
         public void LightOnEvent()
         {
-            _lastTimeFired = 0;
+            _lastTimeFired = 0.0;
             b = false;
 
             if (navLightSwitch == 4)
