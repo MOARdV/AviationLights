@@ -39,17 +39,22 @@ namespace AviationLights
         private int resourceId;
 
         [KSPField]
-        public float EnergyReq = 0;
+        public float EnergyReq = 0.0f;
 
         [KSPField]
-        public float
-            IntervalFlashMode = 0,
-            Interval = 0,
-            FlashOn = 0,
-            FlashOff = 0;
+        public float IntervalFlashMode = 0.0f;
+        [KSPField]
+        public float Interval = 0.0f;
+        [KSPField]
+        public float FlashOn = 0.0f;
+        [KSPField]
+        public float FlashOff = 0.0f;
 
         [KSPField]
         public Vector3 Color = Vector3.zero;
+
+        [KSPField]
+        public Vector3 LightOffset = new Vector3(0.33f, 0.0f, 0.0f);
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -74,7 +79,7 @@ namespace AviationLights
             LightOffsetParent.transform.position = base.gameObject.transform.position;
             LightOffsetParent.transform.rotation = base.gameObject.transform.rotation;
             LightOffsetParent.transform.parent = base.gameObject.transform;
-            LightOffsetParent.transform.Translate(0.33f, 0.0f, 0.0f);
+            LightOffsetParent.transform.Translate(LightOffset);
 
             // Main Illumination light
             mainLight = LightOffsetParent.gameObject.AddComponent<Light>();
@@ -94,33 +99,33 @@ namespace AviationLights
             switch (navLightSwitch)
             {
                 case (int)navLightStates.navLightState.Off:
-                    //Lights go to 'Off' mode
-                    mainLight.intensity = 0;
-                    glowLight.intensity = 0;
+                    // Lights go to 'Off' mode
+                    mainLight.intensity = 0.0f;
+                    glowLight.intensity = 0.0f;
                     break;
                 case (int)navLightStates.navLightState.Flash:
-                    //Lights go to 'Flash' mode
+                    // Lights go to 'Flash' mode
                     FlashBasedSwitcher(IntervalFlashMode);
                     break;
                 case (int)navLightStates.navLightState.DoubleFlash:
-                    //Lights go to 'Double Flash' mode
+                    // Lights go to 'Double Flash' mode
                     DoubleFlashBasedSwitcher(IntervalFlashMode);
                     break;
                 case (int)navLightStates.navLightState.Interval:
-                    //Lights go to 'Interval' mode
+                    // Lights go to 'Interval' mode
                     IntervalBasedSwitcher(Interval);
                     break;
                 case (int)navLightStates.navLightState.On:
-                    //Lights go to 'On' mode
+                    // Lights go to 'On' mode
                     mainLight.intensity = INTENSITY_OFFSET;
                     glowLight.intensity = INTENSITY_GLOW;
                     break;
             }
 
-            //Energy requirements check: if the light is not off and requires resources; request resource. If returned resource is less than requested; turn off
+            // Energy requirements check: if the light is not off and requires resources, request resource. If returned resource is less than requested; turn off
             if (navLightSwitch > 0 && EnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
             {
-                if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5)
+                if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5f)
                 {
                     navLightSwitch = (int)navLightStates.navLightState.Off;
                 }
@@ -131,11 +136,33 @@ namespace AviationLights
         {
             if (EnergyReq > 0.0f)
             {
-                return Resource + " : " + (EnergyReq * 60.0f).ToString("0.0") + "/min.";
+                string resourceUiName = string.Empty;
+                PartResourceDefinition def;
+                if (!string.IsNullOrEmpty(Resource))
+                {
+                    try
+                    {
+                        def = PartResourceLibrary.Instance.resourceDefinitions[Resource];
+                        resourceId = def.id;
+                    }
+                    catch (Exception)
+                    {
+                        resourceId = PartResourceLibrary.ElectricityHashcode;
+                        def = PartResourceLibrary.Instance.resourceDefinitions[resourceId];
+                    }
+                }
+                else
+                {
+                    resourceId = PartResourceLibrary.ElectricityHashcode;
+                    def = PartResourceLibrary.Instance.resourceDefinitions[resourceId];
+                }
+                resourceUiName = def.displayName;
+
+                return KSP.Localization.Localizer.Format("#autoLOC_244201", resourceUiName, (EnergyReq * 60.0f).ToString("0.0"));
             }
             else
             {
-                return "";
+                return string.Empty;
             }
         }
 
@@ -146,23 +173,23 @@ namespace AviationLights
                 b = !b;
                 IntervalFlashMode = b ? this.FlashOn : FlashOff;
                 _lastTimeFired = Planetarium.GetUniversalTime();
-                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0.0f : INTENSITY_OFFSET;
+                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0.0f : INTENSITY_GLOW;
             }
         }
 
         private void DoubleFlashBasedSwitcher(float FlashOn)
         {
-            mainLight.intensity = 0f;
-            glowLight.intensity = 0f;
+            mainLight.intensity = 0.0f;
+            glowLight.intensity = 0.0f;
 
             if (_lastTimeFired < Planetarium.GetUniversalTime() - FlashOn)
             {
                 b = !b;
                 IntervalFlashMode = b ? this.FlashOn : FlashOff;
                 _lastTimeFired = Planetarium.GetUniversalTime();
-                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0.0f : INTENSITY_OFFSET;
+                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0.0f : INTENSITY_GLOW;
             }
         }
 
@@ -171,108 +198,129 @@ namespace AviationLights
             if (_lastTimeFired < Planetarium.GetUniversalTime() - Interval)
             {
                 _lastTimeFired = Planetarium.GetUniversalTime();
-                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0f : INTENSITY_OFFSET;
-                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0f : INTENSITY_GLOW;
+                mainLight.intensity = (mainLight.intensity == INTENSITY_OFFSET) ? 0.0f : INTENSITY_OFFSET;
+                glowLight.intensity = (glowLight.intensity == INTENSITY_GLOW) ? 0.0f : INTENSITY_GLOW;
             }
         }
 
-        [KSPAction("Light Toggle", KSPActionGroup.None)]
+        [KSPAction("#AL_LightToggle", KSPActionGroup.None)]
         public void LightToggle(KSPActionParam param)
         {
             LightOnEvent();
         }
 
-        [KSPAction("Flash Toggle", KSPActionGroup.None)]
+        [KSPAction("#AL_ToggleFlash", KSPActionGroup.None)]
         public void FlashToggle(KSPActionParam param)
         {
             LightFlashEvent();
         }
 
-        [KSPAction("Double Flash Toggle", KSPActionGroup.None)]
+        [KSPAction("#AL_ToggleDoubleFlash", KSPActionGroup.None)]
         public void DoubleFlashToggle(KSPActionParam param)
         {
             LightDoubleFlashEvent();
         }
 
-        [KSPAction("Interval Toggle", KSPActionGroup.None)]
+        [KSPAction("#AL_ToggleInterval", KSPActionGroup.None)]
         public void IntervalToggle(KSPActionParam param)
         {
             LightIntervalEvent();
         }
 
-        [KSPAction("Cycle Modes", KSPActionGroup.None)]
+        [KSPAction("#AL_CycleModes", KSPActionGroup.None)]
         public void Cycle(KSPActionParam param)
         {
             _lastTimeFired = 0.0;
             b = false;
 
-            if (navLightSwitch == 4)
-                navLightSwitch = 0;
-            else
-                navLightSwitch++;
+            navLightSwitch = (navLightSwitch + 1) % 5;
+            //if (navLightSwitch == 4)
+            //{
+            //    navLightSwitch = 0;
+            //}
+            //else
+            //{
+            //    navLightSwitch++;
+            //}
         }
 
-        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Flash")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#AL_SetFlash")]
         public void LightFlashEvent()
         {
             _lastTimeFired = 0.0;
             b = false;
             if (mainLight != null)
             {
-                mainLight.intensity = 0f;
-                glowLight.intensity = 0f;
+                mainLight.intensity = 0.0f;
+                glowLight.intensity = 0.0f;
             }
 
             if (navLightSwitch == 1)
+            {
                 navLightSwitch = 0;
+            }
             else
+            {
                 navLightSwitch = 1;
+            }
         }
 
-        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Double Flash")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#AL_SetDoubleFlash")]
         public void LightDoubleFlashEvent()
         {
             _lastTimeFired = 0.0;
             b = false;
             if (mainLight != null)
             {
-                mainLight.intensity = 0f;
-                glowLight.intensity = 0f;
+                mainLight.intensity = 0.0f;
+                glowLight.intensity = 0.0f;
             }
 
             if (navLightSwitch == 2)
+            {
                 navLightSwitch = 0;
+            }
             else
+            {
                 navLightSwitch = 2;
+            }
         }
 
-        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Interval")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#AL_SetInterval")]
         public void LightIntervalEvent()
         {
             _lastTimeFired = 0.0;
             b = false;
             if (mainLight != null)
             {
-                mainLight.intensity = 0f;
-                glowLight.intensity = 0f;
+                mainLight.intensity = 0.0f;
+                glowLight.intensity = 0.0f;
             }
 
             if (navLightSwitch == 3)
+            {
                 navLightSwitch = 0;
+            }
             else
+            {
                 navLightSwitch = 3;
+            }
         }
 
-        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Light")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#AL_SetLight")]
         public void LightOnEvent()
         {
             _lastTimeFired = 0.0;
             b = false;
 
             if (navLightSwitch == 4)
+            {
                 navLightSwitch = 0;
+            }
             else
+            {
                 navLightSwitch = 4;
+            }
         }
     }
 }
