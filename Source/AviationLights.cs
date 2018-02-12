@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
 
-//Originally made by RPGprayer, edited by BigNose, Why485, GROOV3ST3R, JDP and J.Random
+// Originally made by RPGprayer, edited by BigNose, Why485, GROOV3ST3R, JDP and J.Random
 // Fixes for KSP 1.1, additional fixes, and refactoring by MOARdV.
-//License: This file contains code from RPGprayers "Position/Navigation Lights". Used with permission.
+// License: This file contains code from RPGprayers "Position/Navigation Lights". Used with permission.
 namespace AviationLights
 {
     public class ModuleNavLight : PartModule
@@ -17,18 +17,12 @@ namespace AviationLights
             On = 4
         }
 
-        protected Color _navLightColor;
-
         [KSPField(isPersistant = true)]
         public int navLightSwitch = 0;
         private NavLightState navLightState = NavLightState.Off;
 
         [KSPField]
-        public float intensity = 0.67f;
-
-        private double _lastTimeFired;
-        private GameObject LightOffsetParent;
-        private Light mainLight;
+        public float Intensity = 0.67f;
 
         [KSPField]
         public string Resource = "ElectricCharge";
@@ -37,17 +31,18 @@ namespace AviationLights
         [KSPField]
         public float EnergyReq = 0.0f;
 
-        private float nextInterval = 0.0f;
-
         [KSPField]
         public float Interval = 0.0f;
+
         [KSPField]
         public float FlashOn = 0.0f;
+
         [KSPField]
         public float FlashOff = 0.0f;
 
         [KSPField]
         public Vector3 Color = Vector3.zero;
+        private Color navLightColor;
 
         [KSPField]
         public Vector3 LightOffset = new Vector3(0.33f, 0.0f, 0.0f);
@@ -57,47 +52,59 @@ namespace AviationLights
 
         private int flashCounter = 0;
 
-        public override void OnStart(PartModule.StartState state)
+        private float nextInterval = 0.0f;
+        private float elapsedTime = 0.0f;
+
+        private GameObject lightOffsetParent;
+        private Light mainLight;
+
+        /// <summary>
+        /// Initialize game object / light if we're in flight, set up mode status and
+        /// flasher controls.
+        /// </summary>
+        public void Start()
         {
+            // Sanity check, in case someone decided to manually edit the save
+            // game or add this to the part config.
             if (navLightSwitch < 0 || navLightSwitch > 4)
             {
                 navLightSwitch = 0;
             }
 
-            if (state == StartState.Editor)
+            if (HighLogic.LoadedSceneIsFlight)
             {
-                UpdateMode(); // Update the mode string.
-                return;
+                try
+                {
+                    resourceId = PartResourceLibrary.Instance.resourceDefinitions[Resource].id;
+                }
+                catch
+                {
+                    resourceId = PartResourceLibrary.ElectricityHashcode;
+                }
+
+                Intensity = Mathf.Clamp(Intensity, 0.0f, 8.0f);
+
+                navLightColor = new Color(Color.x, Color.y, Color.z);
+
+                // Parent for main illumination light, used to move it slightly above the light.
+                lightOffsetParent = new GameObject();
+                lightOffsetParent.transform.position = base.gameObject.transform.position;
+                lightOffsetParent.transform.rotation = base.gameObject.transform.rotation;
+                lightOffsetParent.transform.parent = base.gameObject.transform;
+                lightOffsetParent.transform.Translate(LightOffset);
+
+                // Main Illumination light
+                mainLight = lightOffsetParent.gameObject.AddComponent<Light>();
+                mainLight.color = navLightColor;
+                mainLight.intensity = 0.0f;
             }
-
-            try
-            {
-                resourceId = PartResourceLibrary.Instance.resourceDefinitions[Resource].id;
-            }
-            catch
-            {
-                resourceId = PartResourceLibrary.ElectricityHashcode;
-            }
-
-            _navLightColor = new Color(Color.x, Color.y, Color.z);
-            // XXX Refactor this 
-            _lastTimeFired = Planetarium.GetUniversalTime();
-
-            // Parent for main illumination light, used to move it slightly above the light.
-            LightOffsetParent = new GameObject();
-            LightOffsetParent.transform.position = base.gameObject.transform.position;
-            LightOffsetParent.transform.rotation = base.gameObject.transform.rotation;
-            LightOffsetParent.transform.parent = base.gameObject.transform;
-            LightOffsetParent.transform.Translate(LightOffset);
-
-            // Main Illumination light
-            mainLight = LightOffsetParent.gameObject.AddComponent<Light>();
-            mainLight.color = _navLightColor;
-            mainLight.intensity = 0.0f;
 
             UpdateMode();
         }
 
+        /// <summary>
+        /// Check to update lights.
+        /// </summary>
         public override void OnUpdate()
         {
             if (!HighLogic.LoadedSceneIsFlight)
@@ -116,23 +123,52 @@ namespace AviationLights
                 }
             }
 
+            elapsedTime += TimeWarp.deltaTime;
+
             switch (navLightState)
             {
                 case NavLightState.Off:
                 case NavLightState.On:
                     // No-op - taken care of when mode was selected.
                     break;
+
                 case NavLightState.Flash:
-                    // Lights go to 'Flash' mode
-                    FlashBasedSwitcher();
+                    // Lights are in 'Flash' mode
+                    if (elapsedTime >= nextInterval)
+                    {
+                        elapsedTime -= nextInterval;
+
+                        flashCounter = (flashCounter + 1) & 1;
+
+                        nextInterval = ((flashCounter & 1) == 1) ? FlashOn : FlashOff;
+
+                        UpdateLights((flashCounter & 1) == 1);
+                    }
                     break;
+
                 case NavLightState.DoubleFlash:
-                    // Lights go to 'Double Flash' mode
-                    DoubleFlashBasedSwitcher();
+                    // Lights are in 'Double Flash' mode
+                    if (elapsedTime >= nextInterval)
+                    {
+                        elapsedTime -= nextInterval;
+
+                        flashCounter = (flashCounter + 1) & 3;
+
+                        nextInterval = (flashCounter > 0) ? FlashOn : FlashOff;
+
+                        UpdateLights((flashCounter & 1) == 1);
+                    }
                     break;
+
                 case NavLightState.Interval:
-                    // Lights go to 'Interval' mode
-                    IntervalBasedSwitcher();
+                    // Lights are in 'Interval' mode
+                    if (elapsedTime >= Interval)
+                    {
+                        elapsedTime -= Interval;
+
+                        flashCounter = (flashCounter + 1) & 1;
+                        UpdateLights((flashCounter & 1) == 1);
+                    }
                     break;
             }
         }
@@ -175,11 +211,15 @@ namespace AviationLights
             }
         }
 
+        /// <summary>
+        /// Toggle the light on or off.
+        /// </summary>
+        /// <param name="lightsOn"></param>
         private void UpdateLights(bool lightsOn)
         {
             if (lightsOn)
             {
-                mainLight.intensity = intensity;
+                mainLight.intensity = Intensity;
             }
             else
             {
@@ -187,49 +227,50 @@ namespace AviationLights
             }
         }
 
-        // Periodic strobe with differing on and off times.
-        private void FlashBasedSwitcher()
+        /// <summary>
+        /// Update settings based on navLightSwitch changing, reset counters, etc.
+        /// </summary>
+        private void UpdateMode()
         {
-            float interval = nextInterval;
-            if (_lastTimeFired < Planetarium.GetUniversalTime() - interval)
-            {
-                flashCounter = (flashCounter + 1) & 1;
+            elapsedTime = 0.0f;
+            flashCounter = 0;
 
-                nextInterval = ((flashCounter & 1) == 1) ? FlashOn : FlashOff;
-                _lastTimeFired = Planetarium.GetUniversalTime();
-                UpdateLights((flashCounter & 1) == 1);
+            switch (navLightSwitch)
+            {
+                case (int)NavLightState.Off:
+                default:
+                    navLightSwitch = (int)NavLightState.Off; // Trap invalid values from the config file
+                    navLightState = NavLightState.Off;
+                    modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001073");
+                    break;
+                case (int)NavLightState.Flash:
+                    navLightState = NavLightState.Flash;
+                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeFlash");
+                    nextInterval = FlashOff;
+                    break;
+                case (int)NavLightState.DoubleFlash:
+                    navLightState = NavLightState.DoubleFlash;
+                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeDoubleFlash");
+                    nextInterval = FlashOff;
+                    break;
+                case (int)NavLightState.Interval:
+                    navLightState = NavLightState.Interval;
+                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeInterval");
+                    break;
+                case (int)NavLightState.On:
+                    navLightState = NavLightState.On;
+                    modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001074");
+                    break;
+            }
+
+            if (mainLight != null)
+            {
+                mainLight.intensity = (navLightState == NavLightState.On) ? Intensity : 0.0f;
             }
         }
 
-        // Periodic strobe with two strobes of equal length close together.
-        private void DoubleFlashBasedSwitcher()
-        {
-            float interval = nextInterval;
+        //--- "Toggle" action group events -----------------------------------
 
-            if (_lastTimeFired < Planetarium.GetUniversalTime() - nextInterval)
-            {
-                flashCounter = (flashCounter + 1) & 3;
-                nextInterval = (flashCounter > 0) ? FlashOn : FlashOff;
-
-                _lastTimeFired = Planetarium.GetUniversalTime();
-                UpdateLights((flashCounter & 1) == 1);
-            }
-        }
-
-        // Periodic strobe with equal on and off times.
-        private void IntervalBasedSwitcher()
-        {
-            float interval = Interval;
-            if (_lastTimeFired < Planetarium.GetUniversalTime() - interval)
-            {
-                flashCounter = (flashCounter + 1) & 1;
-
-                _lastTimeFired = Planetarium.GetUniversalTime();
-                UpdateLights((flashCounter & 1) == 1);
-            }
-        }
-
-        //--- "Toggle" action group events
         [KSPAction("#autoLOC_6001405", KSPActionGroup.None)]
         public void LightToggle(KSPActionParam param)
         {
@@ -262,7 +303,8 @@ namespace AviationLights
             UpdateMode();
         }
 
-        //--- "Set" action group events
+        //--- "Set" action group events --------------------------------------
+
         [KSPAction("#autoLOC_6001406", KSPActionGroup.None)]
         public void LightOnAction(KSPActionParam param)
         {
@@ -303,44 +345,8 @@ namespace AviationLights
             UpdateMode();
         }
 
-        private void UpdateMode()
-        {
-            _lastTimeFired = 0.0;
-            flashCounter = 0;
+        //--- Part context menu events ---------------------------------------
 
-            switch (navLightSwitch)
-            {
-                case (int)NavLightState.Off:
-                default:
-                    navLightSwitch = (int)NavLightState.Off; // Trap invalid values from the config file
-                    navLightState = NavLightState.Off;
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001073");
-                    break;
-                case (int)NavLightState.Flash:
-                    navLightState = NavLightState.Flash;
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeFlash");
-                    break;
-                case (int)NavLightState.DoubleFlash:
-                    navLightState = NavLightState.DoubleFlash;
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeDoubleFlash");
-                    break;
-                case (int)NavLightState.Interval:
-                    navLightState = NavLightState.Interval;
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeInterval");
-                    break;
-                case (int)NavLightState.On:
-                    navLightState = NavLightState.On;
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001074");
-                    break;
-            }
-
-            if (mainLight != null)
-            {
-                mainLight.intensity = (navLightState == NavLightState.On) ? intensity : 0.0f;
-            }
-        }
-
-        //--- Part context menu events
         [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_6001405")]
         public void LightOnEvent()
         {
