@@ -66,6 +66,7 @@ MODULE
    EnergyReq = 0.0
 
    LightOffset = 0.33, 0.0, 0.0
+   LensTransform = ""
 }
 ```
 
@@ -79,8 +80,9 @@ MODULE
 * **EnergyReq**: The amount of the resource consumed per second.  If this value is zero, the light does not consume any resources.
 * **LightOffset**: The displacement from the root gameObject of the model where the light should be added, in meters.  The default setting applies to the original Aviation
 Lights parts, so it is not required for them.
+* **LensTransform**: A semi-colon (';') delimited list of transforms in the model that contain lens textures.  AL will automatically adjust the diffuse and emissive tint on all of those transforms based on the current Color of the light.  If this field is omitted, lens colors will not change to match the light's color.
 
-While `Color` is adjustable in the VAB, the current Aviation Lights models do not support changing the color of the part's lens.
+`Color` is adjustable in the VAB, but the models need to be designed to support tinting the lenses.  Aviation Lights 3.x lights, for instance, do not.
 
 There are persistent values not listed here.  These values are used to keep track of what state, and they should not be
 set in a config file or edited in the persistent.sfs file.
