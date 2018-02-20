@@ -60,13 +60,13 @@ Newer parts support additional configuration options.
 
 ![Configuration Menu](https://imageshack.com/a/img923/6828/pnyUw2.jpg)
 
-A Color Preset slider provides all of the standard Aviation Lights colors.  This allows a single part
-to function as any colored aviation light.  Additional preset colors may be added.  See PRESETS below for
-more information on how to configure custom colors.
-
 A Type Preset slider allows the light to be configured as a
 navigation light, strobe light, beacon light, or any other type defined in an Aviation Lights type preset. See PRESETS
 below for information on how to configure custom types.
+
+A Color Preset slider provides all of the standard Aviation Lights colors.  This allows a single part
+to function as any colored aviation light.  Additional preset colors may be added.  See PRESETS below for
+more information on how to configure custom colors.
 
 ### Advanced Tweakables
 
@@ -81,42 +81,18 @@ reset if the Color Preset is changed.  The intensity and range reset if the Type
 In addition to the conventional "Light on" and "Light off" settings, Aviation Lights may be configured to flash using one of three patterns.  The all-caps / all-lower below describes the pattern (ALL-CAPS = light is on, all-lower = light is off), with the
 name reporting which config value controls how long the light spends in that state.
 
-* **Interval**: `INTERVAL-interval` - In this mode, the light flashes steadily on and off.  The amount of time spent on or off is controlled by the `Interval` setting in the config.
 * **Flash**: `FLASHON-flashoff` - In this mode, the light flashes on and off.  However, instead of spending an equal amount of time on and off, the timing is different.
 The `FlashOn` setting in the config controls how long the light will switch on, and `FlashOff` controls how long it remains off.
 * **Double Flash**: `FLASHON-flashon-FLASHON-flashoff` - In this mode, the light flashes on and off.  The on time is a double flash - the light will turn on, turn off, and turn on again
 before turning off for a longer period of time.  The `FlashOff` setting controls how long the light remains off, while `FlashOn` controls how long the light
 remains on as well as how long it switches off between the double flashes.
+* **Interval**: `INTERVAL-interval` - In this mode, the light flashes steadily on and off.  The amount of time spent on or off is controlled by the `Interval` setting in the config.
 
 ## PRESETS
 
-Aviation Lights 4.0 and later supports *presets*.  There are two categories of presets, *color* and *type*.  The AL package includes its
+Aviation Lights 4.0 and later supports *presets*.  There are two categories of presets, *type* and *color*.  The AL package includes its
 default presets in GameData/AviationLights/Plugins/AviationLightsPresets.cfg.  This config file supports MM editing.  Players and modders may also add
 their own custom presets in separate config files - AL will scan all valid config nodes for color and type presets.
-
-### Color Presets
-
-Color presets are simply color options that may be selected in the VAB.  Color presets are searched for in config nodes named `AVIATION_LIGHTS_PRESET_COLORS`.
-
-```
-AVIATION_LIGHTS_PRESET_COLORS
-{
-	name = DefaultAviationLightsColors
-	
-	Color
-	{
-		name = white
-		guiName = #AL_ColorWhite
-		value = 1.00, 0.95, 0.91
-	}
-	
-	...
-}
-```
-
-* **name** - The name of the color (allowing MM to edit it).
-* **guiName** - The name of the color that shows up in the Color Preset control.  This field supports localization.
-* **value** - The normalized RGB values of the color, ranging from 0 to 1.
 
 ### Type Presets
 
@@ -150,6 +126,30 @@ AVIATION_LIGHTS_PRESET_TYPES
 * **flashOn**, **flashOff**, **interval** - Timing values for the flash modes of the light, as described above in FLASH MODES.
 * **intensity** - How bright the light is.  Nav Lights, for instance, use 0.5.  Strobe or beacon lights may use values of 1 or higher (with a maximum of 8).
 * **range** - The range of the light.
+
+### Color Presets
+
+Color presets are simply color options that may be selected in the VAB.  Color presets are searched for in config nodes named `AVIATION_LIGHTS_PRESET_COLORS`.
+
+```
+AVIATION_LIGHTS_PRESET_COLORS
+{
+	name = DefaultAviationLightsColors
+	
+	Color
+	{
+		name = white
+		guiName = #AL_ColorWhite
+		value = 1.00, 0.95, 0.91
+	}
+	
+	...
+}
+```
+
+* **name** - The name of the color (allowing MM to edit it).
+* **guiName** - The name of the color that shows up in the Color Preset control.  This field supports localization.
+* **value** - The normalized RGB values of the color, ranging from 0 to 1.
 
 
 ## MODULE CONFIGURATION
