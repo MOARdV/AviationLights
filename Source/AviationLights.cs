@@ -51,8 +51,12 @@ namespace AviationLights
         public float FlashOff = 1.5f;
 
         [KSPField(isPersistant = true)]
-        public Vector3 Color = Vector3.zero;
+        public Vector3 Color = new Vector3(1.0f, 0.95f, 0.91f);
         private List<Vector3> presetColorValues;
+
+        [KSPField(guiActiveEditor = true, guiName = "#AL_Symmetry")]
+        [UI_Toggle(disabledText = "#autoLOC_6001073", enabledText = "#autoLOC_6001074")]
+        public bool applySymmetry = true;
 
         [KSPField(guiActiveEditor = true, guiName = "#AL_TypePreset")]
         [UI_ChooseOption(affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
@@ -77,14 +81,14 @@ namespace AviationLights
 
         [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "#AL_LightIntensity", advancedTweakable = true)]
         [UI_FloatRange(minValue = 0.0f, stepIncrement = 0.25f, maxValue = 8.0f, affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
-        public float Intensity = 1.0f;
+        public float Intensity = 0.5f;
 
         [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "#AL_LightRange", advancedTweakable = true)]
         [UI_FloatRange(minValue = 1.0f, stepIncrement = 1.0f, maxValue = 50.0f, affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
         public float Range = 10.0f;
 
         [KSPField]
-        public Vector3 LightOffset = new Vector3(0.33f, 0.0f, 0.0f);
+        public Vector3 LightOffset = Vector3.zero;
 
         [KSPField]
         public string LensTransform = string.Empty;
@@ -94,6 +98,11 @@ namespace AviationLights
 
         [KSPField(guiActive = false, guiActiveEditor = true, guiName = "#AL_LightMode")]
         public string modeString;
+
+        // Controls whether in-editor tweakable configurations are permitted.  We don't
+        // really want the old parts to use the tweaks, since it'll look odd.
+        [KSPField]
+        public bool Tweakable = true;
 
         private int flashCounter = 0;
 
@@ -191,88 +200,168 @@ namespace AviationLights
         /// </summary>
         private void SetupChooser()
         {
-            ConfigNode[] colorPresetNodes = GameDatabase.Instance.GetConfigNodes("AVIATION_LIGHTS_PRESET_COLORS");
-            List<string> colorNames = new List<string>();
-            presetColorValues = new List<Vector3>();
-            for (int presetNode = 0; presetNode < colorPresetNodes.Length; ++presetNode)
+            if (Tweakable)
             {
-                ConfigNode[] colors = colorPresetNodes[presetNode].GetNodes("Color");
-                for(int colorIndex = 0; colorIndex < colors.Length; ++colorIndex)
+                ConfigNode[] colorPresetNodes = GameDatabase.Instance.GetConfigNodes("AVIATION_LIGHTS_PRESET_COLORS");
+                List<string> colorNames = new List<string>();
+                presetColorValues = new List<Vector3>();
+                for (int presetNode = 0; presetNode < colorPresetNodes.Length; ++presetNode)
                 {
-                    string guiName = string.Empty;
-                    Vector3 value = new Vector3(0.0f, 0.0f, 0.0f);
-                    if (colors[colorIndex].TryGetValue("guiName", ref guiName) && colors[colorIndex].TryGetValue("value", ref value))
+                    ConfigNode[] colors = colorPresetNodes[presetNode].GetNodes("Color");
+                    for (int colorIndex = 0; colorIndex < colors.Length; ++colorIndex)
                     {
-                        if (colorNames.Contains(guiName) == false)
+                        string guiName = string.Empty;
+                        Vector3 value = new Vector3(0.0f, 0.0f, 0.0f);
+                        if (colors[colorIndex].TryGetValue("guiName", ref guiName) && colors[colorIndex].TryGetValue("value", ref value))
                         {
-                            colorNames.Add(guiName);
-                            presetColorValues.Add(value);
+                            if (colorNames.Contains(guiName) == false)
+                            {
+                                colorNames.Add(guiName);
+                                presetColorValues.Add(value);
+                            }
                         }
                     }
                 }
-            }
 
-            BaseField chooseField = Fields["colorPreset"];
-            if (colorNames.Count > 0)
-            {
-                UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
-                chooseOption.options = colorNames.ToArray();
-                chooseOption.onFieldChanged = ColorPresetChanged;
-            }
-            else
-            {
-                // No colors?  No preset slider.
-                chooseField.guiActiveEditor = false;
-            }
-
-            ConfigNode[] typePresetNodes = GameDatabase.Instance.GetConfigNodes("AVIATION_LIGHTS_PRESET_TYPES");
-            List<string> presetNames = new List<string>();
-            presetTypes = new List<TypePreset>();
-            for (int presetNode = 0; presetNode < typePresetNodes.Length; ++presetNode)
-            {
-                ConfigNode[] types = typePresetNodes[presetNode].GetNodes("Type");
-                for (int typeIndex = 0; typeIndex < types.Length; ++typeIndex)
+                BaseField chooseField = Fields["colorPreset"];
+                if (colorNames.Count > 0)
                 {
-                    string guiName = string.Empty;
-                    float flashOn = 0.0f, flashOff = 0.0f, interval = 0.0f, intensity = 0.0f, range = 0.0f;
-                    if (types[typeIndex].TryGetValue("guiName", ref guiName) && 
-                        types[typeIndex].TryGetValue("flashOn", ref flashOn) &&
-                        types[typeIndex].TryGetValue("flashOff", ref flashOff) &&
-                        types[typeIndex].TryGetValue("interval", ref interval) &&
-                        types[typeIndex].TryGetValue("intensity", ref intensity) &&
-                        types[typeIndex].TryGetValue("range", ref range))
-                    {
-                        if (presetNames.Contains(guiName) == false)
-                        {
-                            presetNames.Add(guiName);
-                            
-                            TypePreset type = new TypePreset();
-                            type.flashOn = flashOn;
-                            type.flashOff = flashOff;
-                            type.interval = interval;
-                            type.intensity = intensity;
-                            type.range = range;
+                    UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
+                    chooseOption.options = colorNames.ToArray();
+                    chooseOption.onFieldChanged = ColorPresetChanged;
+                }
+                else
+                {
+                    // No colors?  No preset slider.
+                    chooseField.guiActiveEditor = false;
+                }
 
-                            presetTypes.Add(type);
+                ConfigNode[] typePresetNodes = GameDatabase.Instance.GetConfigNodes("AVIATION_LIGHTS_PRESET_TYPES");
+                List<string> presetNames = new List<string>();
+                presetTypes = new List<TypePreset>();
+                for (int presetNode = 0; presetNode < typePresetNodes.Length; ++presetNode)
+                {
+                    ConfigNode[] types = typePresetNodes[presetNode].GetNodes("Type");
+                    for (int typeIndex = 0; typeIndex < types.Length; ++typeIndex)
+                    {
+                        string guiName = string.Empty;
+                        float flashOn = 0.0f, flashOff = 0.0f, interval = 0.0f, intensity = 0.0f, range = 0.0f;
+                        if (types[typeIndex].TryGetValue("guiName", ref guiName) &&
+                            types[typeIndex].TryGetValue("flashOn", ref flashOn) &&
+                            types[typeIndex].TryGetValue("flashOff", ref flashOff) &&
+                            types[typeIndex].TryGetValue("interval", ref interval) &&
+                            types[typeIndex].TryGetValue("intensity", ref intensity) &&
+                            types[typeIndex].TryGetValue("range", ref range))
+                        {
+                            if (presetNames.Contains(guiName) == false)
+                            {
+                                presetNames.Add(guiName);
+
+                                TypePreset type = new TypePreset();
+                                type.flashOn = flashOn;
+                                type.flashOff = flashOff;
+                                type.interval = interval;
+                                type.intensity = intensity;
+                                type.range = range;
+
+                                presetTypes.Add(type);
+                            }
                         }
                     }
                 }
-            }
 
-            chooseField = Fields["typePreset"];
-            if (presetNames.Count > 0)
-            {
-                UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
-                chooseOption.options = presetNames.ToArray();
-                chooseOption.onFieldChanged = TypePresetChanged;
+                chooseField = Fields["typePreset"];
+                if (presetNames.Count > 0)
+                {
+                    UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
+                    chooseOption.options = presetNames.ToArray();
+                    chooseOption.onFieldChanged = TypePresetChanged;
+                }
+                else
+                {
+                    // No colors?  No preset slider.
+                    chooseField.guiActiveEditor = false;
+                }
+
+                chooseField = Fields["Intensity"];
+                UI_FloatRange floatRange = (UI_FloatRange)chooseField.uiControlEditor;
+                floatRange.onFieldChanged = ValueChanged;
+
+                chooseField = Fields["Range"];
+                floatRange = (UI_FloatRange)chooseField.uiControlEditor;
+                floatRange.onFieldChanged = ValueChanged;
+
+                chooseField = Fields["lightR"];
+                floatRange = (UI_FloatRange)chooseField.uiControlEditor;
+                floatRange.onFieldChanged = ValueChanged;
+
+                chooseField = Fields["lightG"];
+                floatRange = (UI_FloatRange)chooseField.uiControlEditor;
+                floatRange.onFieldChanged = ValueChanged;
+
+                chooseField = Fields["lightB"];
+                floatRange = (UI_FloatRange)chooseField.uiControlEditor;
+                floatRange.onFieldChanged = ValueChanged;
             }
             else
             {
-                // No colors?  No preset slider.
-                chooseField.guiActiveEditor = false;
+                Fields["colorPreset"].guiActiveEditor = false;
+                Fields["typePreset"].guiActiveEditor = false;
+                Fields["Intensity"].guiActiveEditor = false;
+                Fields["Range"].guiActiveEditor = false;
+                Fields["lightR"].guiActiveEditor = false;
+                Fields["lightG"].guiActiveEditor = false;
+                Fields["lightB"].guiActiveEditor = false;
             }
         }
 
+        /// <summary>
+        /// Callback to handle slider values changing, allowing for symmetry updates
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="oldFieldValueObj"></param>
+        private void ValueChanged(BaseField field, object oldFieldValueObj)
+        {
+            if (applySymmetry)
+            {
+                float newValue = field.GetValue<float>(field.host);
+
+                Action<ModuleNavLight, float> paramUpdate = null;
+                switch (field.name)
+                {
+                    case "Intensity":
+                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Intensity = val; };
+                        break;
+                    case "Range":
+                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Range = val; };
+                        break;
+                    case "lightR":
+                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightR = val; };
+                        break;
+                    case "lightG":
+                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightG = val; };
+                        break;
+                    case "lightB":
+                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightB = val; };
+                        break;
+                }
+
+                foreach (Part p in part.symmetryCounterparts)
+                {
+                    ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                    if (ml != null) // shouldn't ever be null?
+                    {
+                        paramUpdate(ml, newValue);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Callback to manage changes to the type preset slider.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="oldFieldValueObj"></param>
         private void TypePresetChanged(BaseField field, object oldFieldValueObj)
         {
             TypePreset newtype = presetTypes[typePreset];
@@ -282,6 +371,22 @@ namespace AviationLights
             Interval = newtype.interval;
             Intensity = newtype.intensity;
             Range = newtype.range;
+
+            if (applySymmetry)
+            {
+                foreach (Part p in part.symmetryCounterparts)
+                {
+                    ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                    if (ml != null) // shouldn't ever be null?
+                    {
+                        ml.FlashOn = FlashOn;
+                        ml.FlashOff = FlashOff;
+                        ml.Interval = Interval;
+                        ml.Intensity = Intensity;
+                        ml.Range = Range;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -295,6 +400,21 @@ namespace AviationLights
             lightR = Color.x;
             lightG = Color.y;
             lightB = Color.z;
+
+            if (applySymmetry)
+            {
+                foreach (Part p in part.symmetryCounterparts)
+                {
+                    ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                    if (ml != null) // shouldn't ever be null?
+                    {
+                        ml.Color = Color;
+                        ml.lightR = lightR;
+                        ml.lightG = lightG;
+                        ml.lightB = lightB;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -440,13 +560,16 @@ namespace AviationLights
         /// <param name="lightsOn"></param>
         private void UpdateLights(bool lightsOn)
         {
-            if (lightsOn)
+            mainLight.intensity = (lightsOn) ? Intensity : 0.0f;
+
+            if (lensMaterial.Length > 0)
             {
-                mainLight.intensity = Intensity;
-            }
-            else
-            {
-                mainLight.intensity = 0.0f;
+                Color newColor = (lightsOn) ? new Color(Color.x, Color.y, Color.z) : XKCDColors.Black;
+
+                for (int i = 0; i < lensMaterial.Length; ++i)
+                {
+                    lensMaterial[i].SetColor(emissiveColorProperty, newColor);
+                }
             }
         }
 
@@ -510,6 +633,23 @@ namespace AviationLights
             }
         }
 
+        private void UpdateSymmetry()
+        {
+            if (HighLogic.LoadedSceneIsEditor && applySymmetry)
+            {
+                foreach (Part p in part.symmetryCounterparts)
+                {
+                    ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                    if (ml != null) // shouldn't ever be null?
+                    {
+                        ml.navLightSwitch = navLightSwitch;
+                        ml.toggleMode = toggleMode;
+                        ml.UpdateMode();
+                    }
+                }
+            }
+        }
+
         //--- "Toggle" action group actions ----------------------------------
 
         [KSPAction("#autoLOC_6001405", KSPActionGroup.None)]
@@ -545,6 +685,7 @@ namespace AviationLights
             toggleMode = navLightSwitch;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPAction("#AL_SetFlash", KSPActionGroup.None)]
@@ -554,6 +695,7 @@ namespace AviationLights
             toggleMode = navLightSwitch;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPAction("#AL_SetDoubleFlash", KSPActionGroup.None)]
@@ -563,6 +705,7 @@ namespace AviationLights
             toggleMode = navLightSwitch;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPAction("#AL_SetInterval", KSPActionGroup.None)]
@@ -572,6 +715,7 @@ namespace AviationLights
             toggleMode = navLightSwitch;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPAction("#autoLOC_6001407", KSPActionGroup.None)]
@@ -580,6 +724,7 @@ namespace AviationLights
             navLightSwitch = (int)NavLightState.Off;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         //--- Part context menu events ---------------------------------------
@@ -590,6 +735,7 @@ namespace AviationLights
             navLightSwitch = (navLightSwitch == toggleMode) ? (int)NavLightState.Off : toggleMode;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_6001405")]
@@ -599,6 +745,7 @@ namespace AviationLights
             toggleMode = (int)NavLightState.On;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleFlash")]
@@ -608,6 +755,7 @@ namespace AviationLights
             toggleMode = (int)NavLightState.Flash;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleDoubleFlash")]
@@ -617,6 +765,7 @@ namespace AviationLights
             toggleMode = (int)NavLightState.DoubleFlash;
 
             UpdateMode();
+            UpdateSymmetry();
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleInterval")]
@@ -626,6 +775,7 @@ namespace AviationLights
             toggleMode = (int)NavLightState.Interval;
 
             UpdateMode();
+            UpdateSymmetry();
         }
     }
 }
