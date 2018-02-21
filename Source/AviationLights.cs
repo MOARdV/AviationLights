@@ -15,7 +15,7 @@ namespace AviationLights
             Flash = 1,
             DoubleFlash = 2,
             Interval = 3,
-            On = 4
+            On = 4 // Keep this as the last option for bounds checking sake.
         }
 
         public class TypePreset
@@ -29,7 +29,6 @@ namespace AviationLights
 
         [KSPField(isPersistant = true)]
         public int navLightSwitch = (int)NavLightState.Off;
-        private NavLightState navLightState = NavLightState.Off;
 
         [KSPField(isPersistant = true)]
         public int toggleMode = (int)NavLightState.Flash;
@@ -138,11 +137,15 @@ namespace AviationLights
                 lensMaterial = materials.ToArray();
             }
 
-            // Sanity check, in case someone decided to manually edit the save
-            // game or add this to the part config.
-            if (navLightSwitch < 0 || navLightSwitch > 4)
+            // Sanity checks:
+            if (navLightSwitch < (int)NavLightState.Off || navLightSwitch > (int)NavLightState.On)
             {
-                navLightSwitch = 0;
+                navLightSwitch = (int)NavLightState.Off;
+            }
+
+            if (toggleMode <= (int)NavLightState.Off || toggleMode > (int)NavLightState.On)
+            {
+                toggleMode = (int)NavLightState.Flash;
             }
 
             toggleBaseEvent = Events["ToggleEvent"];
@@ -157,6 +160,14 @@ namespace AviationLights
             }
 
             Intensity = Mathf.Clamp(Intensity, 0.0f, 8.0f);
+            FlashOn = Mathf.Max(FlashOn, 0.0f);
+            FlashOff = Mathf.Max(FlashOff, 0.0f);
+            Interval = Mathf.Max(Interval, 0.0f);
+            Range = Mathf.Max(Range, 0.0f);
+
+            Color.x = Mathf.Clamp01(Color.x);
+            Color.y = Mathf.Clamp01(Color.y);
+            Color.z = Mathf.Clamp01(Color.z);
 
             Color newColor = new Color(Color.x, Color.y, Color.z);
             if (lensMaterial.Length > 0)
@@ -217,6 +228,9 @@ namespace AviationLights
                             if (colorNames.Contains(guiName) == false)
                             {
                                 colorNames.Add(guiName);
+                                value.x = Mathf.Clamp01(value.x);
+                                value.y = Mathf.Clamp01(value.y);
+                                value.z = Mathf.Clamp01(value.z);
                                 presetColorValues.Add(value);
                             }
                         }
@@ -258,11 +272,11 @@ namespace AviationLights
                                 presetNames.Add(guiName);
 
                                 TypePreset type = new TypePreset();
-                                type.flashOn = flashOn;
-                                type.flashOff = flashOff;
-                                type.interval = interval;
-                                type.intensity = intensity;
-                                type.range = range;
+                                type.flashOn = Mathf.Max(flashOn, 0.0f);
+                                type.flashOff = Mathf.Max(flashOff, 0.0f);
+                                type.interval = Mathf.Max(interval, 0.0f);
+                                type.intensity = Mathf.Clamp(intensity, 0.0f, 8.0f);
+                                type.range = Mathf.Max(range, 0.0f);
 
                                 presetTypes.Add(type);
                             }
@@ -279,7 +293,7 @@ namespace AviationLights
                 }
                 else
                 {
-                    // No colors?  No preset slider.
+                    // No types?  No preset slider.
                     chooseField.guiActiveEditor = false;
                 }
 
@@ -305,6 +319,7 @@ namespace AviationLights
             }
             else
             {
+                // The module is configured as non-Tweakable.  Remove the config options from the editor.
                 Fields["colorPreset"].guiActiveEditor = false;
                 Fields["typePreset"].guiActiveEditor = false;
                 Fields["Intensity"].guiActiveEditor = false;
@@ -318,8 +333,8 @@ namespace AviationLights
         /// <summary>
         /// Callback to handle slider values changing, allowing for symmetry updates
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="oldFieldValueObj"></param>
+        /// <param name="field">The field that's changing.</param>
+        /// <param name="oldFieldValueObj">The old value (unused).</param>
         private void ValueChanged(BaseField field, object oldFieldValueObj)
         {
             if (applySymmetry)
@@ -360,8 +375,8 @@ namespace AviationLights
         /// <summary>
         /// Callback to manage changes to the type preset slider.
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="oldFieldValueObj"></param>
+        /// <param name="field">Field that changed (unused).</param>
+        /// <param name="oldFieldValueObj">Previous value (unused).</param>
         private void TypePresetChanged(BaseField field, object oldFieldValueObj)
         {
             TypePreset newtype = presetTypes[typePreset];
@@ -392,8 +407,8 @@ namespace AviationLights
         /// <summary>
         /// Callback to manage changes to the preset colors slider.
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="oldFieldValueObj"></param>
+        /// <param name="field">Field that changed (unused).</param>
+        /// <param name="oldFieldValueObj">Previous value (unused).</param>
         private void ColorPresetChanged(BaseField field, object oldFieldValueObj)
         {
             Color = presetColorValues[colorPreset];
@@ -424,7 +439,7 @@ namespace AviationLights
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (navLightState != NavLightState.Off && EnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
+                if (navLightSwitch != (int)NavLightState.Off && EnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
                 {
                     if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5f)
                     {
@@ -435,7 +450,7 @@ namespace AviationLights
 
                 elapsedTime += TimeWarp.deltaTime;
 
-                switch (navLightState)
+                switch ((NavLightState)navLightSwitch)
                 {
                     case NavLightState.Off:
                     case NavLightState.On:
@@ -489,20 +504,72 @@ namespace AviationLights
                 Color.y = lightG;
                 Color.z = lightB;
 
+                elapsedTime += Time.deltaTime;
+
+                bool lightsOn = false;
+                switch ((NavLightState)navLightSwitch)
+                {
+                    case NavLightState.On:
+                        flashCounter = 1;
+                        break;
+                    case NavLightState.Off:
+                        flashCounter = 0;
+                        break;
+
+                    case NavLightState.Flash:
+                        // Lights are in 'Flash' mode
+                        if (elapsedTime >= nextInterval)
+                        {
+                            elapsedTime -= nextInterval;
+
+                            flashCounter = (flashCounter + 1) & 1;
+
+                            nextInterval = ((flashCounter & 1) == 1) ? FlashOn : FlashOff;
+                        }
+                        break;
+
+                    case NavLightState.DoubleFlash:
+                        // Lights are in 'Double Flash' mode
+                        if (elapsedTime >= nextInterval)
+                        {
+                            elapsedTime -= nextInterval;
+
+                            flashCounter = (flashCounter + 1) & 3;
+
+                            nextInterval = (flashCounter > 0) ? FlashOn : FlashOff;
+                        }
+                        break;
+
+                    case NavLightState.Interval:
+                        // Lights are in 'Interval' mode
+                        if (elapsedTime >= Interval)
+                        {
+                            elapsedTime -= Interval;
+
+                            flashCounter = (flashCounter + 1) & 1;
+                        }
+                        break;
+                }
+
+                // Or it with lightsOn in case we're in On mode.
+                lightsOn = ((flashCounter & 1) == 1);
+
+
+                Color newColor = new Color(Color.x, Color.y, Color.z);
                 if (lensMaterial.Length > 0)
                 {
-                    Color newColor = new Color(Color.x, Color.y, Color.z);
+                    Color newEmissiveColor = (lightsOn) ? new Color(Color.x, Color.y, Color.z) : XKCDColors.Black;
                     for (int i = 0; i < lensMaterial.Length; ++i)
                     {
                         lensMaterial[i].SetColor(colorProperty, newColor);
-                        lensMaterial[i].SetColor(emissiveColorProperty, newColor);
+                        lensMaterial[i].SetColor(emissiveColorProperty, newEmissiveColor);
                     }
                 }
 
                 // Not sure how to track time in the VAB, so just use solid light intensity.
-                mainLight.intensity = (navLightState != NavLightState.Off) ? Intensity : 0.0f;
+                mainLight.intensity = (lightsOn) ? Intensity : 0.0f;
                 mainLight.range = Range;
-                mainLight.color = new Color(Color.x, Color.y, Color.z);
+                mainLight.color = newColor;
             }
         }
 
@@ -585,22 +652,17 @@ namespace AviationLights
             {
                 case (int)NavLightState.Off:
                 default:
-                    navLightSwitch = (int)NavLightState.Off; // Trap invalid values from the config file
-                    navLightState = NavLightState.Off;
+                    navLightSwitch = (int)NavLightState.Off; // Trap invalid values.
                     break;
                 case (int)NavLightState.Flash:
-                    navLightState = NavLightState.Flash;
                     nextInterval = FlashOff;
                     break;
                 case (int)NavLightState.DoubleFlash:
-                    navLightState = NavLightState.DoubleFlash;
                     nextInterval = FlashOff;
                     break;
                 case (int)NavLightState.Interval:
-                    navLightState = NavLightState.Interval;
-                    break;
                 case (int)NavLightState.On:
-                    navLightState = NavLightState.On;
+                    // no-op
                     break;
             }
 
@@ -609,9 +671,10 @@ namespace AviationLights
                 case (int)NavLightState.Off:
                 case (int)NavLightState.Flash:
                 default:
-                    // For the toggle mode, always force the default to ModeFlash.
+                    // For the toggle mode, always force the default to ModeFlash.  Toggle mode should never be set to Off.
                     modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeFlash");
                     toggleBaseEvent.guiName = "#AL_ToggleFlash";
+                    toggleMode = (int)NavLightState.Flash;
                     break;
                 case (int)NavLightState.DoubleFlash:
                     modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeDoubleFlash");
@@ -629,7 +692,7 @@ namespace AviationLights
 
             if (HighLogic.LoadedSceneIsFlight)
             {
-                mainLight.intensity = (navLightState == NavLightState.On) ? Intensity : 0.0f;
+                mainLight.intensity = (navLightSwitch == (int)NavLightState.On) ? Intensity : 0.0f;
             }
         }
 
