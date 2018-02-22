@@ -40,6 +40,9 @@ namespace AviationLights
         [KSPField]
         public float EnergyReq = 0.0f;
 
+        [KSPField]
+        public float SpotAngle = 0.0f;
+
         [KSPField(isPersistant = true)]
         public float Interval = 1.0f;
 
@@ -179,6 +182,8 @@ namespace AviationLights
                 }
             }
 
+            SpotAngle = Mathf.Clamp(SpotAngle, 0.0f, 179.0f);
+
             // Initialize the sliders for advanced tweakables.
             lightR = Color.x;
             lightG = Color.y;
@@ -197,6 +202,11 @@ namespace AviationLights
             // Restore the light iff we're in the editor and the light's on.  If it's off, or we're in flight, it'll be updated later.
             mainLight.intensity = (HighLogic.LoadedSceneIsEditor && navLightSwitch != (int)NavLightState.Off) ? Intensity : 0.0f;
             mainLight.range = Range;
+            if (SpotAngle > 0.0f)
+            {
+                mainLight.type = LightType.Spot;
+                mainLight.spotAngle = SpotAngle;
+            }
 
             UpdateMode();
 
