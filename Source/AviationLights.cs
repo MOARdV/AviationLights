@@ -93,6 +93,9 @@ namespace AviationLights
         public Vector3 LightOffset = Vector3.zero;
 
         [KSPField]
+        public Vector3 LightRotation = Vector3.zero;
+
+        [KSPField]
         public string LensTransform = string.Empty;
         private Material[] lensMaterial = new Material[0];
         private readonly int colorProperty = Shader.PropertyToID("_Color");
@@ -189,18 +192,19 @@ namespace AviationLights
             lightG = Color.y;
             lightB = Color.z;
 
-            // Parent for main illumination light, used to move it slightly above the light.
+            // Parent for main illumination light, used to move it away from the root game object.
             lightOffsetParent = new GameObject("AL_light");
             lightOffsetParent.transform.position = base.gameObject.transform.position;
             lightOffsetParent.transform.rotation = base.gameObject.transform.rotation;
             lightOffsetParent.transform.parent = base.gameObject.transform;
             lightOffsetParent.transform.Translate(LightOffset);
+            // Swing the light around now that it's been translated.
+            lightOffsetParent.transform.rotation = base.gameObject.transform.rotation * Quaternion.Euler(LightRotation);
 
             // Main Illumination light
             mainLight = lightOffsetParent.gameObject.AddComponent<Light>();
             mainLight.color = newColor;
-            // Restore the light iff we're in the editor and the light's on.  If it's off, or we're in flight, it'll be updated later.
-            mainLight.intensity = (HighLogic.LoadedSceneIsEditor && navLightSwitch != (int)NavLightState.Off) ? Intensity : 0.0f;
+            mainLight.intensity = 0.0f;
             mainLight.range = Range;
             if (SpotAngle > 0.0f)
             {

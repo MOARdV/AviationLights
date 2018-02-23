@@ -208,6 +208,8 @@ MODULE
    EnergyReq = 0.0
 
    LightOffset = 0.0, 0.0, 0.0
+   LightRotation = 0, 0, 0
+   SpotAngle = 0
    LensTransform = ""
    
    Tweakable = true
@@ -250,6 +252,8 @@ consume energy.
 These fields are advanced fields available for modders to create custom light models that integrate with Aviation Lights.
 
 * **LightOffset**: The displacement from the root gameObject of the model where the light should be added, in meters.
+* **LightRotation**: Rotates the light's game object around the X, Y, and Z axis.  This field is only applicable for spot lights.
+* **SpotAngle**: When SpotAngle is greater than zero, the light functions as a spot light instead of a point (omni-directional) light.  SpotAngle is the width of the spotlight in degrees.
 * **LensTransform**: A semi-colon (';') delimited list of transforms in the model that contain lens textures.  AL will adjust the diffuse (_Color) and emissive (_EmissiveColor) tint on all of those transforms based on the current color of the light.  If this field is omitted, lens colors will not change to match the light's color.
 * **Tweakable**: A boolean that controls whether the part's color and type may be changed in the editor.  With some custom
 lights, such as lights with pre-tinted lenses, allowing the colors and types to be changed in the Editor may result in poor-looking models in-flight.
