@@ -5,6 +5,11 @@ This is a repository for the Aviation Lights mod.
 
 Source code for the MOARdV releases is available on [GitHub](https://github.com/MOARdV/AviationLights).
 
+# NOTE:
+
+Due to updated Terms of Service on the Kerbal Space Program Forum, this mod is currently on hiatus.  [View here](https://github.com/MOARdV/AvionicsSystems/wiki/KSP-Forum-ToS) for more information.
+
+
 ## CREDITS
 
 From the original AviationLights [forum post](http://forum.kerbalspaceprogram.com/index.php?/topic/16801-105-aviation-lights-v38-16nov15/):
@@ -263,7 +268,7 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
-Coming Soon, 2018 - v4.00 (Redesign - MOARdV)
+Maybe, 2018 - v4.00 (Redesign - MOARdV)
 
 * Fixed: Double Flash mode.
 * Major overhaul of the plugin code.
