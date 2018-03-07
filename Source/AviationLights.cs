@@ -20,11 +20,11 @@ namespace AviationLights
 
         public class TypePreset
         {
-		    public float flashOn;
-		    public float flashOff;
-		    public float interval;
-		    public float intensity;
-		    public float range;
+            public float flashOn;
+            public float flashOff;
+            public float interval;
+            public float intensity;
+            public float range;
         }
 
         [KSPField(isPersistant = true)]
@@ -127,7 +127,7 @@ namespace AviationLights
             {
                 string[] lensNames = LensTransform.Split(';');
                 List<Material> materials = new List<Material>();
-                MeshRenderer[] mrs = gameObject.transform.GetComponentsInChildren<MeshRenderer>();
+                MeshRenderer[] mrs = gameObject.transform.GetComponentsInChildren<MeshRenderer>(true);
 
                 for (int i = 0; i < lensNames.Length; ++i)
                 {
