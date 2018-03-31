@@ -14,6 +14,8 @@ First things first: Big thanks for RPGprayer's "Position/Navigation Lights" AddO
 Additional credits go to Deadweasel, Why485, GROOV3ST3R, JDP and J.Random for their great help with this addon.  Thanks to
 BigNose for keeping this mod going.
 
+StoneBlue provided the Aviation Lights 4.0 configurable light.
+
 This mod is maintained by MOARdV.
 
 ## INFORMATION
@@ -43,9 +45,7 @@ red/green navlights) and sometimes on the tail (next to the white navlight) on l
 so bright that they remain off until the pilot lines up on the runway, so the ground personnel
 won't be blinded if they stand right next to it.
 
-In addition to the standard navigation and warning light colors, there are amber and blue lamp options.
-
-Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us.
+In addition to the standard navigation and warning light colors, there are amber and blue preset options.
 
 ## INSTALLATION
 
@@ -54,25 +54,48 @@ existing files.  When you have installed the mod correctly, it will look somethi
 
 ```
 + GameData
-         + AviationLights
-		                + Localization
-						+ Parts
-						      + lights
-						+ Patches
-						+ Plugins
+	+ AviationLights
+		+ Localization
+		+ Parts
+			+ lights
+		+ Patches
+		+ Plugins
 ```
 
-Note: Config file and plugin changes in Aviation Lights 4.0 *may* cause lights on existing vessels to behave
+**Note:** Config file and plugin changes in Aviation Lights 4.0 *may* cause lights on existing vessels to behave
 oddly (including potentially not working) when upgrading from earlier versions of the mod.
-The upgrade should not cause any loss of vessels, however.
+The upgrade should not cause any loss of vessels.
+
+### Localization
+
+Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us.
+
+Translations would be appreciated.
+
+### Legacy Aviation Lights
 
 The legacy aviation lights from Aviation Lights 3.x do not appear in the editor by default.  There is a file in
 AviationLights/Patches named MM_UnhideOldLights.nocfg.  Rename that file to MM_UnhideOldLights.cfg and ModuleManager (if installed)
 will update the legacy lights so they are available in the editor.  If you do not wish to include the old parts in your
 installation, and you do not have any vessels currently using those lights, feel free to delete the
-AviationLights/Parts/lights folder.  The new lights are in AviationLights/Parts.
+AviationLights/Parts/lights folder.  The new light is in AviationLights/Parts.
+
+### KSP 1.3.1
+
+AviationLights 4.0 may work in KSP 1.3.1 using the legacy lights.  However, the new part does not work correctly in KSP 1.3.1.
+You are welcome to try this configuration, but it is not supported.
+
+### B9 Part Switcher
+
+If you wish to use B9 Part Switcher instead of the stock part variants feature, rename MM_B9PartSwitch.nocfg to
+MM_B9PartSwitch.cfg.  This will not update existing parts, so I don't recommend changing this in an existing save
+without recovering craft and reconfiguring in the VAB.
 
 ## VAB/SPH CONFIGURATION
+
+The basic light (Light, Aviation) is a configurable light, allowing one part to fill any of the
+preset aviation light roles.  Using advanced tweakables, the color, range, and intensity may be customized even
+more.  This light is found in the Utility menu by default (other mods may change this).
 
 ![Basic Menu](https://imageshack.com/a/img924/5732/ad9F9z.jpg)
 
@@ -83,29 +106,30 @@ the Flight scene.
 
 A toggle button allows changes to be applied automatically to symmetry parts.
 
-The caption identifying the current light mode indicates which of the toggle buttons will be available in Flight.
+The caption identifying the current light mode indicates which of the toggle buttons will be available in Flight.  Only the selected
+mode is available in Flight.
 
 ![Actions Menu](https://imageshack.com/a/img923/1517/URTv5a.jpg)
 
 The action groups editor provides options to toggle the various modes as well as to select a flash mode or switch off the light.
 
-Newer parts support additional configuration options.
+New parts, such as the "Light, Aviation" support additional configuration options.
 
 ![Configuration Menu](https://imageshack.com/a/img923/6828/pnyUw2.jpg)
 
 A Type Preset slider allows the light to be configured as a
-navigation light, strobe light, beacon light, or any other type defined in an Aviation Lights type preset. See PRESETS
+navigation light, strobe light, or a beacon light.  Additional type presets may be added.  See PRESETS
 below for information on how to configure custom types.
 
 A Color Preset slider provides all of the standard Aviation Lights colors (white, red, green, blue, and amber).  This allows a single part
-to function as any colored aviation light.  Additional custom preset colors may be added.  See PRESETS below for
+to function as any colored aviation light.  Additional preset colors may be added.  See PRESETS below for
 more information on how to configure custom colors.
 
 ### Advanced Tweakables
 
 ![Advanced Tweakables](https://imageshack.com/a/img923/6797/ZwnnqL.jpg)
 
-When Advanced Tweakables are enabled, parts that support the Color Preset and Type Preset will also have individual
+When Advanced Tweakables are enabled, parts that support the Color Preset and Type Preset will also have
 sliders to customize the RGB colors of the light, as well as the intensity of the light and its range.  The RGB colors
 reset if the Color Preset is changed.  The intensity and range reset if the Type Preset is changed.
 
@@ -120,7 +144,7 @@ The `FlashOn` setting in the config controls how long the light will switch on, 
 * **Double Flash**: `FLASHON-flashon-FLASHON-flashoff` - In this mode, the light flashes on and off.  The on time is a double flash - the light will turn on, turn off, and turn on again
 before turning off for a longer period of time.  The `FlashOff` setting controls how long the light remains off, while `FlashOn` controls how long the light
 remains on as well as how long it switches off between the double flashes.
-* **Interval**: `INTERVAL-interval` - In this mode, the light flashes steadily on and off.  The amount of time spent on or off is controlled by the `Interval` setting in the config.
+* **Interval**: `INTERVAL-interval` - In this mode, the light flashes evenly on and off.  The amount of time spent on or off is controlled by the `Interval` setting in the config.
 
 ## PRESETS
 
