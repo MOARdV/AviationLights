@@ -1,0 +1,21 @@
+{
+  "NAME": "Aviation Lights",
+  "URL": "https://raw.githubusercontent.com/MOARdV/AviationLights/master/GameData/AviationLights/Plugins/AviationLights.version",
+  "DOWNLOAD": "https://github.com/MOARdV/AviationLights/releases",
+  "VERSION": {
+    "MAJOR": 4,
+    "MINOR": 0,
+    "PATCH": 0
+  },
+  "KSP_VERSION": {
+    "MAJOR": 1,
+    "MINOR": 4,
+    "PATCH": 2
+  },
+  "KSP_VERSION_MIN":
+  {
+  	"MAJOR": 1,
+  	"MINOR": 4,
+	"PATCH": 0
+  },
+}
