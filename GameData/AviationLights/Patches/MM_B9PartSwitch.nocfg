@@ -1,0 +1,68 @@
+// Use B9PartSwitch instead of stock part switching
+@PART[light_aviation]:NEEDS[B9PartSwitch]
+{
+	!MODULE[ModulePartVariants] {}
+	
+	MODULE
+	{
+		name = ModuleB9PartSwitch
+		description = :NEEDS[B9PartSwitch]
+		moduleID = housing
+		switcherDescription = Housing
+		switcherDescriptionPlural = Housing Material:
+		affectDragCubes = false
+		affectFARVoxels = false
+
+		SUBTYPE
+		{
+			name = steel
+			title = Steel
+			transform = housing_Steel
+		}
+		SUBTYPE
+		{
+			name = graphite
+			title = Graphite
+			transform = housing_Graphite
+		}
+	}
+
+	MODULE
+	{
+		name = ModuleB9PartSwitch
+		description = :NEEDS[B9PartSwitch]
+		moduleID = lens
+		switcherDescription = Lens
+		switcherDescriptionPlural = Lens Types:
+		affectDragCubes = false
+		affectFARVoxels = false
+
+		SUBTYPE
+		{
+			name = glass
+			title = Glass
+			transform = lens_Glass
+		}
+
+		SUBTYPE
+		{
+			name = fisheye
+			title = Fisheye
+			transform = lens_Fisheye
+		}
+
+		SUBTYPE
+		{
+			name = pyramid
+			title = Pyramid
+			transform = lens_Pyramid
+		}
+
+		SUBTYPE
+		{
+			name = square
+			title = Square
+			transform = lens_Square
+		}
+	}
+}
