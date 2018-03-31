@@ -287,7 +287,7 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
-Maybe, 2018 - v4.00 (Redesign - MOARdV)
+31 March 2018 - v4.0.0 (Redesign - MOARdV)
 
 * Fixed: Double Flash mode.
 * Major overhaul of the plugin code.
