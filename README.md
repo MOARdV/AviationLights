@@ -133,6 +133,9 @@ When Advanced Tweakables are enabled, parts that support the Color Preset and Ty
 sliders to customize the RGB colors of the light, as well as the intensity of the light and its range.  The RGB colors
 reset if the Color Preset is changed.  The intensity and range reset if the Type Preset is changed.
 
+If the part is configured as a spot light (the SpotAngle config field is greater than 0), the editor
+will also allow toggling the light between a spot light or a point (omni-directional) light.
+
 ## FLASH MODES
 
 In addition to the conventional "Light on" and "Light off" settings, Aviation Lights may be configured to flash using one of three patterns.
@@ -287,6 +290,17 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+7 April 2018 - v4.0.2
+
+* Fixed: Emissive layer not switching correctly during flight (Issue #6).
+* Tweakable lights configured as spot lights (SpotAngle > 0) have an Advanced Tweakable toggle that converts them to point (omni-directional) lights (Issue #7).
+
+***
+3 April 2018 - v4.0.1
+
+* Added tags to the parts, including a Community Category Kit tag to place the lights in the CCK Lights category.
+
+***
 31 March 2018 - v4.0.0 (Redesign - MOARdV)
 
 * Fixed: Double Flash mode.

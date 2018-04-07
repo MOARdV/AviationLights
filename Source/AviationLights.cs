@@ -89,6 +89,10 @@ namespace AviationLights
         [UI_FloatRange(minValue = 1.0f, stepIncrement = 1.0f, maxValue = 50.0f, affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
         public float Range = 10.0f;
 
+        [KSPField(isPersistant = true, guiName = "#AL_LightType", advancedTweakable = true)]
+        [UI_Toggle(disabledText = "#AL_LightTypePoint", enabledText = "#AL_LightTypeSpot")]
+        public bool spotLight = true;
+
         [KSPField]
         public Vector3 LightOffset = Vector3.zero;
 
@@ -208,7 +212,7 @@ namespace AviationLights
             mainLight.range = Range;
             if (SpotAngle > 0.0f)
             {
-                mainLight.type = LightType.Spot;
+                mainLight.type = (spotLight) ? LightType.Spot : LightType.Point;
                 mainLight.spotAngle = SpotAngle;
             }
 
@@ -330,6 +334,9 @@ namespace AviationLights
                 chooseField = Fields["lightB"];
                 floatRange = (UI_FloatRange)chooseField.uiControlEditor;
                 floatRange.onFieldChanged = ValueChanged;
+
+                chooseField = Fields["spotLight"];
+                chooseField.guiActiveEditor = (SpotAngle > 0.0f);
             }
             else
             {
@@ -580,10 +587,14 @@ namespace AviationLights
                     }
                 }
 
-                // Not sure how to track time in the VAB, so just use solid light intensity.
                 mainLight.intensity = (lightsOn) ? Intensity : 0.0f;
                 mainLight.range = Range;
                 mainLight.color = newColor;
+
+                if (SpotAngle > 0.0f)
+                {
+                    mainLight.type = (spotLight) ? LightType.Spot : LightType.Point;
+                }
             }
         }
 
@@ -667,16 +678,21 @@ namespace AviationLights
                 case (int)NavLightState.Off:
                 default:
                     navLightSwitch = (int)NavLightState.Off; // Trap invalid values.
+                    UpdateLights(false);
                     break;
                 case (int)NavLightState.Flash:
                     nextInterval = FlashOff;
+                    UpdateLights(false);
                     break;
                 case (int)NavLightState.DoubleFlash:
                     nextInterval = FlashOff;
+                    UpdateLights(false);
                     break;
                 case (int)NavLightState.Interval:
+                    UpdateLights(false);
+                    break;
                 case (int)NavLightState.On:
-                    // no-op
+                    UpdateLights(true);
                     break;
             }
 
@@ -702,11 +718,6 @@ namespace AviationLights
                     modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001074");
                     toggleBaseEvent.guiName = "#autoLOC_6001405";
                     break;
-            }
-
-            if (HighLogic.LoadedSceneIsFlight)
-            {
-                mainLight.intensity = (navLightSwitch == (int)NavLightState.On) ? Intensity : 0.0f;
             }
         }
 
