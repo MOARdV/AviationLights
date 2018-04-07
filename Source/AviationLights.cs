@@ -90,7 +90,7 @@ namespace AviationLights
         public float Range = 10.0f;
 
         [KSPField(isPersistant = true, guiName = "#AL_LightType", advancedTweakable = true)]
-        [UI_Toggle(disabledText = "#AL_LightTypePoint", enabledText = "#AL_LightTypeSpot")]
+        [UI_Toggle(disabledText = "#AL_LightTypePoint", enabledText = "#AL_LightTypeSpot", affectSymCounterparts = UI_Scene.None, suppressEditorShipModified = true)]
         public bool spotLight = true;
 
         [KSPField]
@@ -337,6 +337,8 @@ namespace AviationLights
 
                 chooseField = Fields["spotLight"];
                 chooseField.guiActiveEditor = (SpotAngle > 0.0f);
+                UI_Toggle toggle = (UI_Toggle)chooseField.uiControlEditor;
+                toggle.onFieldChanged = ValueChanged;
             }
             else
             {
@@ -360,34 +362,50 @@ namespace AviationLights
         {
             if (applySymmetry)
             {
-                float newValue = field.GetValue<float>(field.host);
-
-                Action<ModuleNavLight, float> paramUpdate = null;
-                switch (field.name)
+                if (field.name == "spotLight")
                 {
-                    case "Intensity":
-                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Intensity = val; };
-                        break;
-                    case "Range":
-                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Range = val; };
-                        break;
-                    case "lightR":
-                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightR = val; };
-                        break;
-                    case "lightG":
-                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightG = val; };
-                        break;
-                    case "lightB":
-                        paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightB = val; };
-                        break;
-                }
+                    bool newValue = field.GetValue<bool>(field.host);
 
-                foreach (Part p in part.symmetryCounterparts)
-                {
-                    ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
-                    if (ml != null) // shouldn't ever be null?
+                    foreach (Part p in part.symmetryCounterparts)
                     {
-                        paramUpdate(ml, newValue);
+                        ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                        if (ml != null) // shouldn't ever be null?
+                        {
+                            ml.spotLight = newValue;
+                        }
+                    }
+                }
+                else
+                {
+                    float newValue = field.GetValue<float>(field.host);
+
+                    Action<ModuleNavLight, float> paramUpdate = null;
+                    switch (field.name)
+                    {
+                        case "Intensity":
+                            paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Intensity = val; };
+                            break;
+                        case "Range":
+                            paramUpdate = delegate(ModuleNavLight lt, float val) { lt.Range = val; };
+                            break;
+                        case "lightR":
+                            paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightR = val; };
+                            break;
+                        case "lightG":
+                            paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightG = val; };
+                            break;
+                        case "lightB":
+                            paramUpdate = delegate(ModuleNavLight lt, float val) { lt.lightB = val; };
+                            break;
+                    }
+
+                    foreach (Part p in part.symmetryCounterparts)
+                    {
+                        ModuleNavLight ml = p.FindModuleImplementing<ModuleNavLight>();
+                        if (ml != null) // shouldn't ever be null?
+                        {
+                            paramUpdate(ml, newValue);
+                        }
                     }
                 }
             }
