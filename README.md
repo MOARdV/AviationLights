@@ -290,6 +290,11 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+7 April 2018 - v4.0.3
+
+* Implement correct symmetry updating behavior for the point/spot toggle (Issue #7).
+
+***
 7 April 2018 - v4.0.2
 
 * Fixed: Emissive layer not switching correctly during flight (Issue #6).
