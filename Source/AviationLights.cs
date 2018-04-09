@@ -170,9 +170,9 @@ namespace AviationLights
             }
 
             Intensity = Mathf.Clamp(Intensity, 0.0f, 8.0f);
-            FlashOn = Mathf.Max(FlashOn, 0.0f);
-            FlashOff = Mathf.Max(FlashOff, 0.0f);
-            Interval = Mathf.Max(Interval, 0.0f);
+            FlashOn = Mathf.Max(FlashOn, 0.01f);
+            FlashOff = Mathf.Max(FlashOff, 0.01f);
+            Interval = Mathf.Max(Interval, 0.01f);
             Range = Mathf.Max(Range, 0.0f);
 
             Color.x = Mathf.Clamp01(Color.x);
@@ -482,8 +482,13 @@ namespace AviationLights
                 {
                     if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5f)
                     {
-                        mainLight.intensity = 0.0f;
+                        UpdateLights(false);
                         return;
+                    }
+                    else if (mainLight.intensity == 0.0f && navLightSwitch == (int)NavLightState.On)
+                    {
+                        // All other nav lights will reset below, but the On case is different.
+                        UpdateLights(true);
                     }
                 }
 
@@ -500,7 +505,7 @@ namespace AviationLights
                         // Lights are in 'Flash' mode
                         if (elapsedTime >= nextInterval)
                         {
-                            elapsedTime -= nextInterval;
+                            elapsedTime = elapsedTime % nextInterval;
 
                             flashCounter = (flashCounter + 1) & 1;
 
@@ -514,7 +519,7 @@ namespace AviationLights
                         // Lights are in 'Double Flash' mode
                         if (elapsedTime >= nextInterval)
                         {
-                            elapsedTime -= nextInterval;
+                            elapsedTime = elapsedTime % nextInterval;
 
                             flashCounter = (flashCounter + 1) & 3;
 
@@ -528,7 +533,7 @@ namespace AviationLights
                         // Lights are in 'Interval' mode
                         if (elapsedTime >= Interval)
                         {
-                            elapsedTime -= Interval;
+                            elapsedTime = elapsedTime % Interval;
 
                             flashCounter = (flashCounter + 1) & 1;
                             UpdateLights((flashCounter & 1) == 1);
@@ -559,7 +564,7 @@ namespace AviationLights
                         // Lights are in 'Flash' mode
                         if (elapsedTime >= nextInterval)
                         {
-                            elapsedTime -= nextInterval;
+                            elapsedTime = elapsedTime % nextInterval;
 
                             flashCounter = (flashCounter + 1) & 1;
 
@@ -571,7 +576,7 @@ namespace AviationLights
                         // Lights are in 'Double Flash' mode
                         if (elapsedTime >= nextInterval)
                         {
-                            elapsedTime -= nextInterval;
+                            elapsedTime = elapsedTime % nextInterval;
 
                             flashCounter = (flashCounter + 1) & 3;
 
@@ -583,7 +588,7 @@ namespace AviationLights
                         // Lights are in 'Interval' mode
                         if (elapsedTime >= Interval)
                         {
-                            elapsedTime -= Interval;
+                            elapsedTime = elapsedTime % Interval;
 
                             flashCounter = (flashCounter + 1) & 1;
                         }
@@ -597,7 +602,7 @@ namespace AviationLights
                 Color newColor = new Color(Color.x, Color.y, Color.z);
                 if (lensMaterial.Length > 0)
                 {
-                    Color newEmissiveColor = (lightsOn) ? new Color(Color.x, Color.y, Color.z) : XKCDColors.Black;
+                    Color newEmissiveColor = (lightsOn) ? newColor : XKCDColors.Black;
                     for (int i = 0; i < lensMaterial.Length; ++i)
                     {
                         lensMaterial[i].SetColor(colorProperty, newColor);

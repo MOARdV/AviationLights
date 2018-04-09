@@ -290,6 +290,11 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+9 April 2018 - v4.0.4
+
+* Fixed: Flashing lights blink rapidly after warp during flight (Issue #8).
+
+***
 7 April 2018 - v4.0.3
 
 * Implement correct symmetry updating behavior for the point/spot toggle (Issue #7).
