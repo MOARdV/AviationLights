@@ -290,6 +290,11 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+6 May 2018 - v4.0.5
+
+* Fixed: Aviation Lights illuminate the surface of the planet (Issue #10).
+
+***
 9 April 2018 - v4.0.4
 
 * Fixed: Flashing lights blink rapidly after warp during flight (Issue #8).
