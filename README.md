@@ -182,8 +182,8 @@ AVIATION_LIGHTS_PRESET_TYPES
 }
 ```
 
-* **name** - The name of the color (making it easier to edit using MM).
-* **guiName** - The name of the color that shows up in the Color Preset control.  This field supports localization.
+* **name** - The name of the preset type (making it easier to edit using MM).
+* **guiName** - The name of the preset type that shows up in the Type Preset control.  This field supports localization.
 * **flashOn**, **flashOff**, **interval** - Timing values for the flash modes of the light, as described above in FLASH MODES.
 * **intensity** - How bright the light is.  Nav Lights, for instance, use 0.5.  Strobe or beacon lights may use values of 1 or higher (with a maximum of 8).
 * **range** - The range of the light.
