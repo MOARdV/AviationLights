@@ -49,6 +49,7 @@ In addition to the standard navigation and warning light colors, there are amber
 
 ## INSTALLATION
 
+Download the latest version of Aviation Lights from the [Releases](https://github.com/MOARdV/AviationLights/releases) page.
 Merge the GameData folder in the ZIP file with your KSP GameData folder.  Tell the computer to overwrite any
 existing files.  When you have installed the mod correctly, it will look something like
 
