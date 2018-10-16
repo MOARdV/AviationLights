@@ -291,6 +291,12 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+16 October 2018 - v4.0.5.1
+
+* Recompiled against KSP 1.5.0.
+* Fixed: Typo in version file.
+
+***
 6 May 2018 - v4.0.5
 
 * Fixed: Aviation Lights illuminate the surface of the planet (Issue #10).
