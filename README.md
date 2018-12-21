@@ -69,7 +69,7 @@ The upgrade should not cause any loss of vessels.
 
 ### Localization
 
-Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us.
+Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us and es-es.
 
 Translations would be appreciated.
 
@@ -80,11 +80,6 @@ AviationLights/Patches named MM_UnhideOldLights.nocfg.  Rename that file to MM_U
 will update the legacy lights so they are available in the editor.  If you do not wish to include the old parts in your
 installation, and you do not have any vessels currently using those lights, feel free to delete the
 AviationLights/Parts/lights folder.  The new light is in AviationLights/Parts.
-
-### KSP 1.3.1
-
-AviationLights 4.0 may work in KSP 1.3.1 using the legacy lights.  However, the new part does not work correctly in KSP 1.3.1.
-You are welcome to try this configuration, but it is not supported.
 
 ### B9 Part Switcher
 
@@ -253,7 +248,8 @@ and the Intensity and Range may be changed with the Type Preset control.  In add
 directly by enabling Advanced Tweakables.
 
 * **Color**: The RGB color of the light.  Valid values are from 0 to 1 for each channel.
-* **Intensity**: The intensity of the light.  Brighter lights should use larger values.  Valid numbers range from 0 to 8.  Nav lights use 0.5.
+* **Intensity**: The intensity of the light.  Brighter lights should use larger values.  Valid numbers range from 0 to 8.  Nav lights use 0.5.  Energy consumption
+is affected by Intensity.
 * **Range**: The range of the light, in meters.
 
 ### Flash Timing
@@ -272,8 +268,13 @@ a new one.  All times are measured in seconds.
 The resource fields control the resource type and amount consumed per second.  By default, the parts require ElectricCharge, but they do not
 consume energy.
 
+EnergyReq is affected by the Intensity of the light.  The EnergyReq listed in the part config is the amount of resources required for a light
+with an Intensity of 1.0.  EnergyReq is scaled by the square of the Intensity, with a minimum scale of 0.25.  For example, a Nav Light that has an EnergyReq of 0.020
+and an Intensity of 0.5 will actually use 0.005 EC (= 0.020 x (0.5 x 0.5)).  An Intensity of 2.0 will consume 4x the listed EnergyReq.
+
 * **Resource**: The name (from the RESOURCE_DEFINITION) of the resource consumed when this light is on.
-* **EnergyReq**: The amount of the resource consumed per second while switched on.  If this value is zero, the light does not consume any resources.
+* **EnergyReq**: The amount of the resource consumed per second while switched on for a light of Intensity = 1.0.  If this value is zero, the light does not consume any resources.
+Intensity modifies this value.
 
 ### Advanced
 
@@ -291,6 +292,12 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+21 December 2018 - v4.0.6
+
+* Added es-es localization courtesy fitiales.  Pull request #15.
+* Scaled energy consumption based on light intensity.  Issue #13.
+
+***
 16 October 2018 - v4.0.5.1
 
 * Recompiled against KSP 1.5.0.

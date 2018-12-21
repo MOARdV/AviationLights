@@ -39,6 +39,7 @@ namespace AviationLights
 
         [KSPField]
         public float EnergyReq = 0.0f;
+        public float actualEnergyReq = 0.0f;
 
         [KSPField]
         public float SpotAngle = 0.0f;
@@ -170,6 +171,7 @@ namespace AviationLights
             }
 
             Intensity = Mathf.Clamp(Intensity, 0.0f, 8.0f);
+            actualEnergyReq = EnergyReq * Mathf.Max(0.25f, Intensity * Intensity);
             FlashOn = Mathf.Max(FlashOn, 0.01f);
             FlashOff = Mathf.Max(FlashOff, 0.01f);
             Interval = Mathf.Max(Interval, 0.01f);
@@ -428,6 +430,7 @@ namespace AviationLights
             Interval = newtype.interval;
             Intensity = newtype.intensity;
             Range = newtype.range;
+            actualEnergyReq = EnergyReq * Mathf.Max(0.25f, Intensity * Intensity);
 
             if (applySymmetry)
             {
@@ -481,9 +484,9 @@ namespace AviationLights
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (navLightSwitch != (int)NavLightState.Off && EnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
+                if (navLightSwitch != (int)NavLightState.Off && actualEnergyReq > 0.0f && TimeWarp.deltaTime > 0.0f)
                 {
-                    if (vessel.RequestResource(part, resourceId, EnergyReq * TimeWarp.deltaTime, true) < EnergyReq * TimeWarp.deltaTime * 0.5f)
+                    if (vessel.RequestResource(part, resourceId, actualEnergyReq * TimeWarp.deltaTime, true) < actualEnergyReq * TimeWarp.deltaTime * 0.5f)
                     {
                         UpdateLights(false);
                         return;
