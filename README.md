@@ -69,7 +69,7 @@ The upgrade should not cause any loss of vessels.
 
 ### Localization
 
-Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us and es-es.
+Aviation Lights 4.0 and later support localization.  The currently supported languages are en-us, es-es, and fr-fr.
 
 Translations would be appreciated.
 
