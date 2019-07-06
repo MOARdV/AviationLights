@@ -292,6 +292,17 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+6 July 2019 - v4.0.8
+
+* Added zh-cn localization courtesy duck1998.
+
+***
+25 February 2019 - v4.0.7
+
+* Added fr-fr localization courtesy don-vip.
+* Finally synchronized the DLL binary and the version file (forgot to update .version for 4.0.6).
+
+***
 21 December 2018 - v4.0.6
 
 * Added es-es localization courtesy fitiales.  Pull request #15.
