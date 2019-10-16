@@ -106,8 +106,9 @@ namespace AviationLights
         private readonly int colorProperty = Shader.PropertyToID("_Color");
         private readonly int emissiveColorProperty = Shader.PropertyToID("_EmissiveColor");
 
-        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "#AL_LightMode")]
-        public string modeString;
+        [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "#AL_LightMode")]
+        [UI_ChooseOption(affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
+        public int toggleModeSelector = (int)NavLightState.Flash - 1;
 
         // Controls whether in-editor tweakable configurations are permitted.  We don't
         // really want the old parts to use the tweaks, since it'll look odd.
@@ -122,6 +123,7 @@ namespace AviationLights
         private GameObject lightOffsetParent;
         private Light mainLight;
         private BaseEvent toggleBaseEvent;
+        private BaseAction toggleBaseAction;
 
         /// <summary>
         /// Initialize game object / light, set up mode status and flasher controls.
@@ -158,8 +160,10 @@ namespace AviationLights
             {
                 toggleMode = (int)NavLightState.Flash;
             }
+            toggleModeSelector = toggleMode - 1;
 
             toggleBaseEvent = Events["ToggleEvent"];
+            toggleBaseAction = Actions["CurrentModeToggle"];
 
             try
             {
@@ -234,6 +238,13 @@ namespace AviationLights
         /// </summary>
         private void SetupChooser()
         {
+            BaseField chooseField = Fields["toggleModeSelector"];
+            {
+                UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
+                chooseOption.options = new string[] { "#AL_ModeFlash", "#AL_ModeDoubleFlash", "#AL_ModeInterval", "#autoLOC_6001074" };
+                chooseOption.onFieldChanged = FlashModeChanged;
+            }
+
             if (Tweakable)
             {
                 ConfigNode[] colorPresetNodes = GameDatabase.Instance.GetConfigNodes("AVIATION_LIGHTS_PRESET_COLORS");
@@ -260,7 +271,7 @@ namespace AviationLights
                     }
                 }
 
-                BaseField chooseField = Fields["colorPreset"];
+                chooseField = Fields["colorPreset"];
                 if (colorNames.Count > 0)
                 {
                     UI_ChooseOption chooseOption = (UI_ChooseOption)chooseField.uiControlEditor;
@@ -413,6 +424,27 @@ namespace AviationLights
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Update the selected in-flight mode based on the chooser.
+        /// </summary>
+        /// <param name="field">Field that changed (unused).</param>
+        /// <param name="oldFieldValueObj">Previous value (unused).</param>
+        private void FlashModeChanged(BaseField field, object oldFieldValueObj)
+        {
+            toggleMode = toggleModeSelector + 1;
+            if (navLightSwitch != (int)NavLightState.Off)
+            {
+                navLightSwitch = toggleMode;
+            }
+
+            UpdateMode();
+
+            if (applySymmetry)
+            {
+                UpdateSymmetry();
             }
         }
 
@@ -731,23 +763,24 @@ namespace AviationLights
                 case (int)NavLightState.Flash:
                 default:
                     // For the toggle mode, always force the default to ModeFlash.  Toggle mode should never be set to Off.
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeFlash");
                     toggleBaseEvent.guiName = "#AL_ToggleFlash";
+                    toggleBaseAction.guiName = "#AL_ToggleFlash";
                     toggleMode = (int)NavLightState.Flash;
                     break;
                 case (int)NavLightState.DoubleFlash:
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeDoubleFlash");
                     toggleBaseEvent.guiName = "#AL_ToggleDoubleFlash";
+                    toggleBaseAction.guiName = "#AL_ToggleDoubleFlash";
                     break;
                 case (int)NavLightState.Interval:
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#AL_ModeInterval");
                     toggleBaseEvent.guiName = "#AL_ToggleInterval";
+                    toggleBaseAction.guiName = "#AL_ToggleInterval";
                     break;
                 case (int)NavLightState.On:
-                    modeString = KSP.Localization.Localizer.GetStringByTag("#autoLOC_6001074");
                     toggleBaseEvent.guiName = "#autoLOC_6001405";
+                    toggleBaseAction.guiName = "#autoLOC_6001405";
                     break;
             }
+            toggleModeSelector = toggleMode - 1;
         }
 
         private void UpdateSymmetry()
@@ -769,28 +802,34 @@ namespace AviationLights
 
         //--- "Toggle" action group actions ----------------------------------
 
+        [KSPAction("#AL_ToggleFlash", KSPActionGroup.Light)]
+        public void CurrentModeToggle(KSPActionParam param)
+        {
+            ToggleEvent();
+        }
+
         [KSPAction("#autoLOC_6001405", KSPActionGroup.None)]
         public void LightToggle(KSPActionParam param)
         {
-            LightOnEvent();
+            ToggleLightOn();
         }
 
         [KSPAction("#AL_ToggleFlash", KSPActionGroup.None)]
         public void FlashToggle(KSPActionParam param)
         {
-            LightFlashEvent();
+            ToggleLightFlash();
         }
 
         [KSPAction("#AL_ToggleDoubleFlash", KSPActionGroup.None)]
         public void DoubleFlashToggle(KSPActionParam param)
         {
-            LightDoubleFlashEvent();
+            ToggleLightDoubleFlash();
         }
 
         [KSPAction("#AL_ToggleInterval", KSPActionGroup.None)]
         public void IntervalToggle(KSPActionParam param)
         {
-            LightIntervalEvent();
+            ToggleLightInterval();
         }
 
         //--- "Set" action group actions -------------------------------------
@@ -846,7 +885,7 @@ namespace AviationLights
 
         //--- Part context menu events ---------------------------------------
 
-        [KSPEvent(guiActive = true, guiActiveEditor = false, guiName = "#AL_ToggleFlash")]
+        [KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#AL_ToggleFlash")]
         public void ToggleEvent()
         {
             navLightSwitch = (navLightSwitch == toggleMode) ? (int)NavLightState.Off : toggleMode;
@@ -855,8 +894,7 @@ namespace AviationLights
             UpdateSymmetry();
         }
 
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_6001405")]
-        public void LightOnEvent()
+        public void ToggleLightOn()
         {
             navLightSwitch = (navLightSwitch == (int)NavLightState.On) ? (int)NavLightState.Off : (int)NavLightState.On;
             toggleMode = (int)NavLightState.On;
@@ -865,8 +903,7 @@ namespace AviationLights
             UpdateSymmetry();
         }
 
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleFlash")]
-        public void LightFlashEvent()
+        public void ToggleLightFlash()
         {
             navLightSwitch = (navLightSwitch == (int)NavLightState.Flash) ? (int)NavLightState.Off : (int)NavLightState.Flash;
             toggleMode = (int)NavLightState.Flash;
@@ -875,8 +912,7 @@ namespace AviationLights
             UpdateSymmetry();
         }
 
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleDoubleFlash")]
-        public void LightDoubleFlashEvent()
+        public void ToggleLightDoubleFlash()
         {
             navLightSwitch = (navLightSwitch == (int)NavLightState.DoubleFlash) ? (int)NavLightState.Off : (int)NavLightState.DoubleFlash;
             toggleMode = (int)NavLightState.DoubleFlash;
@@ -885,8 +921,7 @@ namespace AviationLights
             UpdateSymmetry();
         }
 
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "#AL_ToggleInterval")]
-        public void LightIntervalEvent()
+        public void ToggleLightInterval()
         {
             navLightSwitch = (navLightSwitch == (int)NavLightState.Interval) ? (int)NavLightState.Off : (int)NavLightState.Interval;
             toggleMode = (int)NavLightState.Interval;
