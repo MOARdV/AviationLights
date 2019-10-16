@@ -79,7 +79,7 @@ The legacy aviation lights from Aviation Lights 3.x do not appear in the editor 
 AviationLights/Patches named MM_UnhideOldLights.nocfg.  Rename that file to MM_UnhideOldLights.cfg and ModuleManager (if installed)
 will update the legacy lights so they are available in the editor.  If you do not wish to include the old parts in your
 installation, and you do not have any vessels currently using those lights, feel free to delete the
-AviationLights/Parts/lights folder.  The new light is in AviationLights/Parts.
+AviationLights/Parts/lights folder.  The Aviation Lights 4.x light is in AviationLights/Parts.
 
 ### B9 Part Switcher
 
@@ -93,25 +93,12 @@ The basic light (Light, Aviation) is a configurable light, allowing one part to 
 preset aviation light roles.  Using advanced tweakables, the color, range, and intensity may be customized even
 more.  This light is found in the Utility menu by default (other mods may change this).
 
-![Basic Menu](https://imageshack.com/a/img924/5732/ad9F9z.jpg)
-
-Aviation Lights may be configured in the editor (VAB and SPH).  The basic part menu provides four flash mode selection
-buttons which can be used to select the default illumination behavior of the light.  The selected mode is displayed
-above the mode selection buttons.  If an aviation light is glowing or flashing in the editor, it will do so when the vessel spawns in
+Aviation Lights may be configured in the editor (VAB and SPH).  The basic part menu provides a part variant selector to
+choose which mode the light will use.  The selected mode is displayed
+in the Toggle button next to the variant selector.  If an aviation light is enabled in the editor, it will be enabled when the vessel spawns in
 the Flight scene.
 
 A toggle button allows changes to be applied automatically to symmetry parts.
-
-The caption identifying the current light mode indicates which of the toggle buttons will be available in Flight.  Only the selected
-mode is available in Flight.
-
-![Actions Menu](https://imageshack.com/a/img923/1517/URTv5a.jpg)
-
-The action groups editor provides options to toggle the various modes as well as to select a flash mode or switch off the light.
-
-New parts, such as the "Light, Aviation" support additional configuration options.
-
-![Configuration Menu](https://imageshack.com/a/img923/6828/pnyUw2.jpg)
 
 A Type Preset slider allows the light to be configured as a
 navigation light, strobe light, or a beacon light.  Additional type presets may be added.  See PRESETS
@@ -292,6 +279,12 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+16 October 2019 - v4.1.0
+
+* Recompiled for KSP 1.8.0
+* Redesigned the VAB PAW components.
+
+***
 6 July 2019 - v4.0.8
 
 * Added zh-cn localization courtesy duck1998.
