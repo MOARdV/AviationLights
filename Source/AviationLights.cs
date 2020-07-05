@@ -1,7 +1,7 @@
 /***************************************************************************************/
 /* PROJECT CONFIG:                                                                     */
 /* Set env variable KSPFolder to wherever your KSP is installed and reopen the project */
-/* to have get all project paths working wherecer your KSP resides.                    */
+/* to have get all project paths working wherever your KSP resides.                    */
 /***************************************************************************************/
 
 using System;
