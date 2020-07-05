@@ -221,6 +221,11 @@ namespace AviationLights
                 mainLight.type = (spotLight) ? LightType.Spot : LightType.Point;
                 mainLight.spotAngle = SpotAngle;
             }
+            else
+            {
+                mainLight.type = LightType.Point;
+                mainLight.spotAngle = 0.0f;
+            }
             // Remove layer 10 from the cullingMask - it's the layer KSP uses to draw planets while in
             // orbit, and longer distances on the lights will illuminate the surface.
             mainLight.cullingMask = (mainLight.cullingMask & ~(1 << 10));
@@ -366,6 +371,7 @@ namespace AviationLights
                 Fields["lightR"].guiActiveEditor = false;
                 Fields["lightG"].guiActiveEditor = false;
                 Fields["lightB"].guiActiveEditor = false;
+                Fields["spotLight"].guiActiveEditor = false;
             }
         }
 
