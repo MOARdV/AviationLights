@@ -1,3 +1,9 @@
+/***************************************************************************************/
+/* PROJECT CONFIG:                                                                     */
+/* Set env variable KSPFolder to wherever your KSP is installed and reopen the project */
+/* to have get all project paths working wherecer your KSP resides.                    */
+/***************************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -42,7 +48,7 @@ namespace AviationLights
         public float actualEnergyReq = 0.0f;
 
         [KSPField]
-        public float SpotAngle = 0.0f;
+        public float SpotAngle = 160.0f;
 
         [KSPField(isPersistant = true)]
         public float Interval = 1.0f;
