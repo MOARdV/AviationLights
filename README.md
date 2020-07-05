@@ -279,6 +279,12 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+5 July 2020 - v4.1.1
+
+* Recompiled for KSP 1.10.0 (and finally updated the version file, alas).
+* Fixed bug that enabled the spotlight toggle on non-tweakable lights (such as the old aviation lights), as noted by GitHub user Promyclon.
+
+***
 16 October 2019 - v4.1.0
 
 * Recompiled for KSP 1.8.0
