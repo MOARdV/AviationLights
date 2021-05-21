@@ -279,6 +279,12 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
+21 May 2021 - v4.1.2
+
+* Added Brazilian Portuguese (pt-br) courtesy Lisias
+
+***
+
 5 July 2020 - v4.1.1
 
 * Recompiled for KSP 1.10.0 (and finally updated the version file, alas).
