@@ -1,4 +1,0 @@
-@PART[lightstrobe_white,lightnav_white,lightnav_red,lightnav_green,lightnav_blue,lightbeacon_red,lightbeacon_amber]
-{
-	@category = Utility
-}
