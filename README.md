@@ -274,6 +274,7 @@ added to a config file or edited in the persistent.sfs file.
 unreleased - v4.1.3
 
 * Removed the legacy (Aviation Lights 3.x) lights.
+* Fix pt-br localization, also courtesy Lisias.
 
 ***
 
