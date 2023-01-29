@@ -271,16 +271,20 @@ added to a config file or edited in the persistent.sfs file.
 
 ## CHANGELOG
 
-unreleased - v4.1.3
+29 January 2023 - v4.1.3
 
 * Removed the legacy (Aviation Lights 3.x) lights.
 * Fix pt-br localization, also courtesy Lisias.
+* Recompiled for KSP 1.12
+* Placed up for adoption.
+* B9 patches may need updated.  They are disabled by default.
 
 ***
 
 21 May 2021 - v4.1.2
 
 * Added Brazilian Portuguese (pt-br) courtesy Lisias
+* Recompiled for KSP 1.11
 
 ***
 
