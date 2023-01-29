@@ -87,7 +87,7 @@ namespace AviationLights
         public float Intensity = 0.5f;
 
         [KSPField(isPersistant = true, guiActiveEditor = true, guiName = "#AL_LightRange", advancedTweakable = true)]
-        [UI_FloatRange(minValue = 1.0f, stepIncrement = 1.0f, maxValue = 50.0f, affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
+        [UI_FloatRange(minValue = 1.0f, stepIncrement = 1.0f, maxValue = 150.0f, affectSymCounterparts = UI_Scene.None, scene = UI_Scene.Editor, suppressEditorShipModified = true)]
         public float Range = 10.0f;
 
         [KSPField(isPersistant = true, guiName = "#AL_LightType", advancedTweakable = true)]
